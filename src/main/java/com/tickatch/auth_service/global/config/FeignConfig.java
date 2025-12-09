@@ -1,7 +1,7 @@
-package com.tickatch.user_service.global.config;
+package com.tickatch.auth_service.global.config;
 
-import com.tickatch.user_service.global.feign.FeignErrorDecoder;
-import com.tickatch.user_service.global.feign.FeignRequestInterceptor;
+import com.tickatch.auth_service.global.feign.FeignErrorDecoder;
+import com.tickatch.auth_service.global.feign.FeignRequestInterceptor;
 import feign.Logger;
 import feign.Retryer;
 import feign.codec.ErrorDecoder;
