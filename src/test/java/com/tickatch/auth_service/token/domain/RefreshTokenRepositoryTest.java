@@ -2,9 +2,10 @@ package com.tickatch.auth_service.token.domain;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.tickatch.auth_service.token.domain.RefreshToken;
 import com.tickatch.auth_service.token.domain.repository.RefreshTokenRepositoryImpl;
 import com.tickatch.auth_service.token.domain.repository.dto.RefreshTokenSearchCondition;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -27,11 +28,19 @@ class RefreshTokenRepositoryTest {
   @Autowired
   private RefreshTokenRepositoryImpl refreshTokenRepository;
 
+  @PersistenceContext
+  private EntityManager em;
+
   private UUID authId;
 
   @BeforeEach
   void setUp() {
     authId = UUID.randomUUID();
+  }
+
+  private void flushAndClear() {
+    em.flush();
+    em.clear();
   }
 
   @Nested
@@ -127,6 +136,7 @@ class RefreshTokenRepositoryTest {
       refreshTokenRepository.save(token2);
 
       refreshTokenRepository.deleteAllByAuthId(authId);
+      flushAndClear();
 
       List<RefreshToken> found = refreshTokenRepository.findAllByAuthId(authId);
       assertThat(found).isEmpty();
@@ -140,6 +150,7 @@ class RefreshTokenRepositoryTest {
       refreshTokenRepository.save(token2);
 
       int revokedCount = refreshTokenRepository.revokeAllByAuthId(authId);
+      flushAndClear();
 
       assertThat(revokedCount).isEqualTo(2);
       List<RefreshToken> found = refreshTokenRepository.findAllByAuthId(authId);
@@ -174,6 +185,7 @@ class RefreshTokenRepositoryTest {
       refreshTokenRepository.save(revokedToken);
 
       int deletedCount = refreshTokenRepository.deleteExpiredAndRevokedTokens();
+      flushAndClear();
 
       assertThat(deletedCount).isEqualTo(1);
       assertThat(refreshTokenRepository.findById(validToken.getId())).isPresent();

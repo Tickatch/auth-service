@@ -57,7 +57,8 @@ public interface RefreshTokenJpaRepository extends JpaRepository<RefreshToken, U
    *
    * @param authId Auth ID
    */
-  @Modifying(clearAutomatically = true, flushAutomatically = true)
+  @Modifying
+//      (clearAutomatically = true, flushAutomatically = true)
   @Query("DELETE FROM RefreshToken rt WHERE rt.authId = :authId")
   void deleteAllByAuthId(@Param("authId") UUID authId);
 
@@ -67,7 +68,8 @@ public interface RefreshTokenJpaRepository extends JpaRepository<RefreshToken, U
    * @param authId Auth ID
    * @return 폐기된 토큰 수
    */
-  @Modifying(clearAutomatically = true, flushAutomatically = true)
+  @Modifying
+//      (clearAutomatically = true, flushAutomatically = true)
   @Query(
       "UPDATE RefreshToken rt SET rt.revoked = true "
           + "WHERE rt.authId = :authId AND rt.revoked = false")
@@ -79,7 +81,8 @@ public interface RefreshTokenJpaRepository extends JpaRepository<RefreshToken, U
    * @param now 현재 시간
    * @return 삭제된 토큰 수
    */
-  @Modifying(clearAutomatically = true, flushAutomatically = true)
+  @Modifying
+//      (clearAutomatically = true, flushAutomatically = true)
   @Query("DELETE FROM RefreshToken rt WHERE rt.revoked = true OR rt.expiresAt < :now")
   int deleteExpiredAndRevokedTokens(@Param("now") LocalDateTime now);
 }
