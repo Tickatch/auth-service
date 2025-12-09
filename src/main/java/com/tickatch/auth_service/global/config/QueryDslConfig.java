@@ -1,4 +1,4 @@
-package com.tickatch.user_service.global.config;
+package com.tickatch.auth_service.global.config;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
