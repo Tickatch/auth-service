@@ -20,6 +20,7 @@ public enum AuthErrorCode implements ErrorCode {
   // ========================================
   AUTH_NOT_FOUND(HttpStatus.NOT_FOUND.value(), "AUTH_NOT_FOUND"),
   PROVIDER_NOT_FOUND(HttpStatus.NOT_FOUND.value(), "PROVIDER_NOT_FOUND"),
+  SOCIAL_ACCOUNT_NOT_FOUND(HttpStatus.NOT_FOUND.value(), "SOCIAL_ACCOUNT_NOT_FOUND"),
 
   // ========================================
   // 검증 - 회원가입 (400)
@@ -28,6 +29,7 @@ public enum AuthErrorCode implements ErrorCode {
   INVALID_PASSWORD(HttpStatus.BAD_REQUEST.value(), "INVALID_PASSWORD"),
   INVALID_USER_TYPE(HttpStatus.BAD_REQUEST.value(), "INVALID_USER_TYPE"),
   DUPLICATE_EMAIL(HttpStatus.BAD_REQUEST.value(), "DUPLICATE_EMAIL"),
+  EMAIL_ALREADY_EXISTS(HttpStatus.BAD_REQUEST.value(), "EMAIL_ALREADY_EXISTS"),
 
   // ========================================
   // 검증 - 비밀번호 (400)
@@ -36,14 +38,20 @@ public enum AuthErrorCode implements ErrorCode {
   SAME_AS_OLD_PASSWORD(HttpStatus.BAD_REQUEST.value(), "SAME_AS_OLD_PASSWORD"),
   PASSWORD_TOO_SHORT(HttpStatus.BAD_REQUEST.value(), "PASSWORD_TOO_SHORT"),
   PASSWORD_TOO_WEAK(HttpStatus.BAD_REQUEST.value(), "PASSWORD_TOO_WEAK"),
+  INVALID_CURRENT_PASSWORD(HttpStatus.BAD_REQUEST.value(), "INVALID_CURRENT_PASSWORD"),
 
   // ========================================
   // 검증 - 소셜 로그인 (400)
   // ========================================
   INVALID_PROVIDER(HttpStatus.BAD_REQUEST.value(), "INVALID_PROVIDER"),
   INVALID_OAUTH_CODE(HttpStatus.BAD_REQUEST.value(), "INVALID_OAUTH_CODE"),
+  INVALID_OAUTH_STATE(HttpStatus.BAD_REQUEST.value(), "INVALID_OAUTH_STATE"),
   PROVIDER_ALREADY_CONNECTED(HttpStatus.BAD_REQUEST.value(), "PROVIDER_ALREADY_CONNECTED"),
   OAUTH_NOT_ALLOWED_FOR_USER_TYPE(HttpStatus.BAD_REQUEST.value(), "OAUTH_NOT_ALLOWED_FOR_USER_TYPE"),
+  OAUTH_PROVIDER_NOT_CONFIGURED(HttpStatus.BAD_REQUEST.value(), "OAUTH_PROVIDER_NOT_CONFIGURED"),
+  OAUTH_LOGIN_CANCELLED(HttpStatus.BAD_REQUEST.value(), "OAUTH_LOGIN_CANCELLED"),
+  OAUTH_EMAIL_REQUIRED(HttpStatus.BAD_REQUEST.value(), "OAUTH_EMAIL_REQUIRED"),
+  USER_TYPE_MISMATCH(HttpStatus.BAD_REQUEST.value(), "USER_TYPE_MISMATCH"),
 
   // ========================================
   // 인증 실패 (401)
@@ -63,14 +71,14 @@ public enum AuthErrorCode implements ErrorCode {
   // ========================================
   LOGIN_FAILED_LIMIT_EXCEEDED(
       HttpStatus.UNPROCESSABLE_ENTITY.value(), "LOGIN_FAILED_LIMIT_EXCEEDED"),
-  CANNOT_DISCONNECT_LAST_PROVIDER(
-      HttpStatus.UNPROCESSABLE_ENTITY.value(), "CANNOT_DISCONNECT_LAST_PROVIDER"),
   ALREADY_WITHDRAWN(HttpStatus.UNPROCESSABLE_ENTITY.value(), "ALREADY_WITHDRAWN"),
 
   // ========================================
   // 외부 서비스 (503)
   // ========================================
   OAUTH_SERVER_ERROR(HttpStatus.SERVICE_UNAVAILABLE.value(), "OAUTH_SERVER_ERROR"),
+  OAUTH_TOKEN_FAILED(HttpStatus.SERVICE_UNAVAILABLE.value(), "OAUTH_TOKEN_FAILED"),
+  OAUTH_USER_INFO_FAILED(HttpStatus.SERVICE_UNAVAILABLE.value(), "OAUTH_USER_INFO_FAILED"),
   EVENT_PUBLISH_FAILED(HttpStatus.SERVICE_UNAVAILABLE.value(), "EVENT_PUBLISH_FAILED");
 
   private final int status;

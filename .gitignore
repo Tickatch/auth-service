@@ -38,3 +38,10 @@ out/
 
 gradle.properties
 .env
+.data/
+
+data/keys/
+*.pem
+*.key
+*.p12
+*.jks
