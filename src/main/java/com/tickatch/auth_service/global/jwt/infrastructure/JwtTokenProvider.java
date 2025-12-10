@@ -61,6 +61,9 @@ public class JwtTokenProvider implements TokenProvider {
 
   @Override
   public boolean validateToken(String token) {
+    if (token == null || token.isBlank()) {
+      return false;
+    }
     try {
       Jwts.parser()
           .verifyWith(rsaKeyManager.getPublicKey())
