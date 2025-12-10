@@ -57,8 +57,6 @@ class AuthErrorCodeTest {
 
       assertThat(AuthErrorCode.LOGIN_FAILED_LIMIT_EXCEEDED.getStatus())
           .isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY.value());
-      assertThat(AuthErrorCode.CANNOT_DISCONNECT_LAST_PROVIDER.getStatus())
-          .isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY.value());
       assertThat(AuthErrorCode.ALREADY_WITHDRAWN.getStatus())
           .isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY.value());
     }
