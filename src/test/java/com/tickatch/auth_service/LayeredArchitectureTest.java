@@ -1,4 +1,4 @@
-package com.tickatch.user_service;
+package com.tickatch.auth_service;
 
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
 

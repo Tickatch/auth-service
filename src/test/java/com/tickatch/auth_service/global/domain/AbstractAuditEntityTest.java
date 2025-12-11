@@ -1,4 +1,4 @@
-package com.tickatch.user_service.global.domain;
+package com.tickatch.auth_service.global.domain;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
