@@ -81,7 +81,7 @@ dependencies {
 
     // Metrics - Prometheus
     runtimeOnly 'io.micrometer:micrometer-registry-prometheus'
-    implementation 'io.prometheus:simpleclient_pushgateway:0.16.0'
+    implementation 'io.prometheus:prometheus-metrics-exporter-pushgateway'
 
     // Tracing - Zipkin Brave
     implementation 'io.micrometer:micrometer-tracing-bridge-brave'
