@@ -19,6 +19,7 @@ public enum TokenErrorCode implements ErrorCode {
   // 조회 (404)
   // ========================================
   REFRESH_TOKEN_NOT_FOUND(HttpStatus.NOT_FOUND.value(), "REFRESH_TOKEN_NOT_FOUND"),
+  AUTH_NOT_FOUND(HttpStatus.NOT_FOUND.value(), "AUTH_NOT_FOUND"),
 
   // ========================================
   // 검증 (400)
