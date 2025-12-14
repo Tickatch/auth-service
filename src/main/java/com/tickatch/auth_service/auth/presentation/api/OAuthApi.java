@@ -6,9 +6,9 @@ import com.tickatch.auth_service.auth.application.service.command.dto.LoginResul
 import com.tickatch.auth_service.auth.domain.exception.AuthErrorCode;
 import com.tickatch.auth_service.auth.domain.exception.AuthException;
 import com.tickatch.auth_service.auth.domain.vo.ProviderType;
-import com.tickatch.auth_service.auth.domain.vo.UserType;
 import com.tickatch.auth_service.auth.infrastructure.oauth.OAuthProperties;
 import com.tickatch.auth_service.auth.presentation.api.dto.response.LoginResponse;
+import io.github.tickatch.common.api.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -133,9 +133,9 @@ public class OAuthApi {
       LoginResult result = oAuthCommandService.handleCallback(providerType, code, state);
       log.info("OAuth 콜백 처리 완료 - provider: {}, authId: {}", provider, result.authId());
 
-      // LoginResponse를 JSON으로 변환 후 URL 인코딩
-      LoginResponse loginResponse = LoginResponse.from(result);
-      String jsonData = objectMapper.writeValueAsString(loginResponse);
+      // ApiResponse로 래핑하여 JSON 변환
+      ApiResponse<LoginResponse> apiResponse = ApiResponse.success(LoginResponse.from(result));
+      String jsonData = objectMapper.writeValueAsString(apiResponse);
       String encodedData = URLEncoder.encode(jsonData, StandardCharsets.UTF_8);
 
       response.sendRedirect(frontendCallbackUrl + "?success=true&data=" + encodedData);
@@ -169,7 +169,7 @@ public class OAuthApi {
       @PathVariable String provider,
 
       @Parameter(description = "인증된 사용자 ID (Gateway에서 주입)")
-      @RequestHeader("X-user-Id") UUID authId,
+      @RequestHeader("X-User-Id") UUID authId,
 
       @Parameter(hidden = true)
       @RequestHeader(value = "User-Agent", defaultValue = "Unknown") String userAgent,
@@ -189,19 +189,19 @@ public class OAuthApi {
    */
   @Operation(summary = "소셜 계정 연동 해제", description = "연동된 소셜 계정을 해제합니다.")
   @DeleteMapping("/{provider}/unlink")
-  public ResponseEntity<Void> unlinkSocialAccount(
+  public ResponseEntity<ApiResponse<Void>> unlinkSocialAccount(
       @Parameter(description = "소셜 로그인 제공자", example = "kakao")
       @PathVariable String provider,
 
       @Parameter(description = "인증된 사용자 ID (Gateway에서 주입)")
-      @RequestHeader("X-user-Id") UUID authId
+      @RequestHeader("X-User-Id") UUID authId
   ) {
     ProviderType providerType = parseProviderType(provider);
 
     oAuthCommandService.unlinkProvider(authId, providerType);
     log.info("소셜 계정 연동 해제 완료 - provider: {}, authId: {}", provider, authId);
 
-    return ResponseEntity.noContent().build();
+    return ResponseEntity.ok(ApiResponse.successWithMessage("소셜 계정 연동이 해제되었습니다."));
   }
 
   /**
