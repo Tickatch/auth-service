@@ -1,4 +1,4 @@
-package com.tickatch.user_service.global.config;
+package com.tickatch.auth_service.global.config;
 
 import java.lang.reflect.Method;
 import java.util.concurrent.Executor;

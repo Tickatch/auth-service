@@ -1,4 +1,4 @@
-package com.tickatch.user_service.global.feign;
+package com.tickatch.auth_service.global.feign;
 
 import feign.Response;
 import feign.codec.ErrorDecoder;

@@ -1,4 +1,4 @@
-package com.tickatch.user_service.global.config;
+package com.tickatch.auth_service.global.config;
 
 import io.github.tickatch.common.event.IntegrationEvent;
 import java.util.HashMap;

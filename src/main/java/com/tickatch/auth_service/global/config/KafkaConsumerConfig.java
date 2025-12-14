@@ -1,4 +1,4 @@
-package com.tickatch.user_service.global.config;
+package com.tickatch.auth_service.global.config;
 
 import io.github.tickatch.common.event.IntegrationEvent;
 import java.util.HashMap;
@@ -31,7 +31,7 @@ public class KafkaConsumerConfig {
   @Value("${spring.kafka.bootstrap-servers:localhost:9092}")
   private String bootstrapServers;
 
-  @Value("${spring.kafka.consumer.group-id:product-service}")
+  @Value("${spring.kafka.consumer.group-id:auth-service}")
   private String groupId;
 
   @Bean

@@ -39,32 +39,61 @@ Tickatch는 콘서트, 뮤지컬, 연극, 스포츠 등 다양한 공연의 티�
 ### 레이어 구조
 
 ```
-auth-service/
-├── presentation/       # API 컨트롤러, DTO
-├── application/        # 서비스 레이어
-│   ├── service/
-│   │   ├── AuthService
-│   │   └── TokenService
-│   └── messaging/      # 이벤트 발행
-├── domain/             # 엔티티, VO, 리포지토리 인터페이스
-│   ├── auth/
-│   │   ├── Auth
-│   │   ├── AuthProvider
-│   │   ├── AuthStatus
-│   │   ├── UserType
-│   │   ├── Password
-│   │   └── AuthRepository
-│   └── token/
-│       ├── RefreshToken
-│       └── RefreshTokenRepository
-├── infrastructure/     # 리포지토리 구현, JWT, OAuth
-│   ├── jwt/
-│   ├── oauth/
-│   └── persistence/
-└── global/             # 공통 설정, 예외 처리
-    └── domain/
-        ├── AbstractTimeEntity
-        └── AbstractAuditEntity
+src/main/java
+├── auth/                           # Bounded Context
+│   ├── presentation/
+│   │   └── api/
+│   │       ├── public/             # 비인증 API
+│   │       │   ├── dto/
+│   │       │   └── AuthPublicApi
+│   │       └── internal/           # 내부 서비스 호출용
+│   │           ├── dto/
+│   │           └── AuthInternalApi
+│   ├── application/
+│   │   └── service/
+│   │       ├── AuthService
+│   │       └── TokenService
+│   ├── domain/
+│   │   ├── Auth                    # Aggregate Root (Entity)
+│   │   ├── AuthProvider            # Entity
+│   │   ├── RefreshToken            # Aggregate Root (Entity)
+│   │   ├── vo/
+│   │   │   ├── Password
+│   │   │   ├── AuthStatus
+│   │   │   ├── UserType
+│   │   │   └── ProviderType
+│   │   ├── service/                # Domain Service
+│   │   ├── repository/
+│   │   │   ├── AuthRepository
+│   │   │   └── RefreshTokenRepository
+│   │   └── exception/
+│   │       ├── AuthException
+│   │       └── AuthErrorCode
+│   └── infrastructure/
+│       └── external/               # 외부 API Client
+│           ├── jwt/
+│           │   └── JwtTokenProvider
+│           └── oauth/
+│               ├── KakaoOAuthClient
+│               ├── NaverOAuthClient
+│               └── GoogleOAuthClient
+│
+└── global/
+    ├── exception/
+    │   ├── GlobalExceptionHandler
+    │   └── ErrorResponse
+    ├── config/
+    │   ├── SecurityConfig
+    │   └── RabbitMQConfig
+    ├── utils/
+    └── infrastructure/
+        ├── event/
+        │   └── dto/
+        │       ├── AuthCreatedEvent
+        │       └── AuthWithdrawnEvent
+        └── domain/
+            ├── AbstractTimeEntity
+            └── AbstractAuditEntity
 ```
 
 ## 주요 기능
