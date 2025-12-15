@@ -9,7 +9,6 @@ import com.tickatch.auth_service.auth.application.service.command.dto.OAuthLogin
 import com.tickatch.auth_service.auth.application.service.command.dto.OAuthRegisterCommand;
 import com.tickatch.auth_service.auth.application.service.command.dto.RefreshCommand;
 import com.tickatch.auth_service.auth.application.service.command.dto.RegisterCommand;
-import com.tickatch.auth_service.auth.application.service.command.dto.WithdrawCommand;
 import com.tickatch.auth_service.auth.domain.Auth;
 import com.tickatch.auth_service.auth.domain.AuthRepository;
 import com.tickatch.auth_service.auth.domain.exception.AuthErrorCode;
@@ -25,7 +24,10 @@ import org.springframework.transaction.annotation.Transactional;
 /**
  * 인증 관련 Command 서비스.
  *
- * <p>회원가입, 로그인, 로그아웃, 비밀번호 변경, 회원탈퇴를 담당한다.
+ * <p>회원가입, 로그인, 로그아웃, 비밀번호 변경 등 인증 관련 커맨드를 처리한다.
+ *
+ * <p>탈퇴는 User Service를 통해서만 처리되며, 이 서비스는 User Service에서 발행한
+ * 이벤트를 수신하여 Auth 상태를 동기화한다.
  *
  * @author Tickatch
  * @since 1.0.0
@@ -39,6 +41,10 @@ public class AuthCommandService {
   private final AuthRepository authRepository;
   private final TokenPort tokenPort;
   private final PasswordEncoder passwordEncoder;
+
+  // ========================================
+  // 회원가입
+  // ========================================
 
   /**
    * 회원가입을 처리한다.
@@ -62,7 +68,6 @@ public class AuthCommandService {
     log.info("회원가입 완료 - authId: {}, email: {}, userType: {}",
         auth.getId(), auth.getEmail(), auth.getUserType());
 
-    // 토큰 발급
     TokenResult tokenResult = tokenPort.issueTokens(
         auth.getId(),
         auth.getUserType(),
@@ -107,6 +112,10 @@ public class AuthCommandService {
     return LoginResult.of(auth.getId(), auth.getEmail(), auth.getUserType(), tokenResult);
   }
 
+  // ========================================
+  // 로그인/로그아웃
+  // ========================================
+
   /**
    * 로그인을 처리한다.
    *
@@ -118,14 +127,12 @@ public class AuthCommandService {
     Auth auth = authRepository.findByEmailAndUserType(command.email(), command.userType())
         .orElseThrow(() -> new AuthException(AuthErrorCode.INVALID_CREDENTIALS));
 
-    // 비밀번호 검증
     if (!auth.matchesPassword(command.password(), passwordEncoder)) {
       auth.recordLoginFailure();
       log.warn("로그인 실패 - email: {}, failCount: {}", command.email(), auth.getLoginFailCount());
       throw new AuthException(AuthErrorCode.INVALID_CREDENTIALS);
     }
 
-    // 로그인 성공 기록
     auth.recordLoginSuccess();
     log.info("로그인 성공 - authId: {}, email: {}", auth.getId(), auth.getEmail());
 
@@ -150,7 +157,6 @@ public class AuthCommandService {
     Auth auth = authRepository.findByProviderAndProviderUserId(command.providerType(), command.providerUserId())
         .orElseThrow(() -> new AuthException(AuthErrorCode.SOCIAL_ACCOUNT_NOT_FOUND));
 
-    // 사용자 유형 검증
     if (auth.getUserType() != command.userType()) {
       throw new AuthException(AuthErrorCode.USER_TYPE_MISMATCH);
     }
@@ -175,14 +181,11 @@ public class AuthCommandService {
    * @return 갱신된 토큰 정보
    */
   public LoginResult refresh(RefreshCommand command) {
-    // Refresh Token에서 authId 추출
     UUID authId = tokenPort.getAuthIdFromRefreshToken(command.refreshToken());
 
-    // Auth 조회 (userType 확인)
     Auth auth = authRepository.findById(authId)
         .orElseThrow(() -> new AuthException(AuthErrorCode.AUTH_NOT_FOUND));
 
-    // 토큰 갱신
     TokenResult tokenResult = tokenPort.refreshTokens(command.refreshToken(), auth.getUserType());
 
     return LoginResult.of(auth.getId(), auth.getEmail(), auth.getUserType(), tokenResult);
@@ -203,6 +206,10 @@ public class AuthCommandService {
     }
   }
 
+  // ========================================
+  // 비밀번호 변경
+  // ========================================
+
   /**
    * 비밀번호를 변경한다.
    *
@@ -213,7 +220,6 @@ public class AuthCommandService {
     Auth auth = authRepository.findById(command.authId())
         .orElseThrow(() -> new AuthException(AuthErrorCode.AUTH_NOT_FOUND));
 
-    // 현재 비밀번호 검증
     if (!auth.matchesPassword(command.currentPassword(), passwordEncoder)) {
       throw new AuthException(AuthErrorCode.INVALID_CURRENT_PASSWORD);
     }
@@ -221,38 +227,81 @@ public class AuthCommandService {
     auth.changePassword(command.newPassword(), passwordEncoder, auth.getId().toString());
     log.info("비밀번호 변경 완료 - authId: {}", command.authId());
 
-    // 보안: 모든 기기에서 로그아웃
     tokenPort.revokeAllTokens(command.authId());
   }
 
+  // ========================================
+  // 이벤트 기반 상태 동기화 (User Service → Auth Service)
+  // ========================================
+
   /**
-   * 회원탈퇴를 처리한다.
+   * 사용자 탈퇴 이벤트를 처리한다.
    *
-   * @param command 회원탈퇴 요청
-   * @throws AuthException 비밀번호가 일치하지 않는 경우
+   * <p>User Service에서 발행한 탈퇴 이벤트를 수신하여 Auth 상태를 WITHDRAWN으로 변경하고
+   * 모든 토큰을 삭제한다.
+   *
+   * <p>Auth 계정을 찾을 수 없는 경우 경고 로그만 남기고 정상 종료한다.
+   *
+   * @param authId 탈퇴할 Auth ID
    */
-  public void withdraw(WithdrawCommand command) {
-    Auth auth = authRepository.findById(command.authId())
-        .orElseThrow(() -> new AuthException(AuthErrorCode.AUTH_NOT_FOUND));
-
-    // 비밀번호 검증
-    if (!auth.matchesPassword(command.password(), passwordEncoder)) {
-      throw new AuthException(AuthErrorCode.INVALID_CREDENTIALS);
-    }
-
-    auth.withdraw(auth.getId().toString());
-    log.info("회원탈퇴 완료 - authId: {}", command.authId());
-
-    // 모든 토큰 삭제
-    tokenPort.deleteAllTokens(command.authId());
-
-    // TODO: 회원탈퇴 이벤트 발행 (mq)
+  public void handleUserWithdrawn(UUID authId) {
+    authRepository.findById(authId).ifPresentOrElse(
+        auth -> {
+          auth.withdraw(authId.toString());
+          tokenPort.deleteAllTokens(authId);
+          log.info("탈퇴 이벤트 처리 완료 - authId: {}", authId);
+        },
+        () -> log.warn("탈퇴 이벤트 처리 실패: Auth를 찾을 수 없음 - authId: {}", authId)
+    );
   }
 
   /**
-   * 이메일 중복을 검증한다.
+   * 사용자 정지 이벤트를 처리한다.
+   *
+   * <p>User Service에서 발행한 정지 이벤트를 수신하여 Auth 상태를 LOCKED로 변경하고
+   * 모든 토큰을 무효화한다. 이후 해당 사용자는 로그인이 불가능해진다.
+   *
+   * <p>Auth 계정을 찾을 수 없는 경우 경고 로그만 남기고 정상 종료한다.
+   *
+   * @param authId 정지할 Auth ID
    */
-  private void validateEmailNotDuplicate(String email, com.tickatch.auth_service.auth.domain.vo.UserType userType) {
+  public void handleUserSuspended(UUID authId) {
+    authRepository.findById(authId).ifPresentOrElse(
+        auth -> {
+          auth.lock();
+          tokenPort.revokeAllTokens(authId);
+          log.info("정지 이벤트 처리 완료 - authId: {}", authId);
+        },
+        () -> log.warn("정지 이벤트 처리 실패: Auth를 찾을 수 없음 - authId: {}", authId)
+    );
+  }
+
+  /**
+   * 사용자 활성화 이벤트를 처리한다.
+   *
+   * <p>User Service에서 발행한 활성화 이벤트를 수신하여 Auth 상태를 ACTIVE로 변경한다.
+   * 이후 해당 사용자는 다시 로그인이 가능해진다.
+   *
+   * <p>Auth 계정을 찾을 수 없는 경우 경고 로그만 남기고 정상 종료한다.
+   *
+   * @param authId 활성화할 Auth ID
+   */
+  public void handleUserActivated(UUID authId) {
+    authRepository.findById(authId).ifPresentOrElse(
+        auth -> {
+          auth.unlock();
+          log.info("활성화 이벤트 처리 완료 - authId: {}", authId);
+        },
+        () -> log.warn("활성화 이벤트 처리 실패: Auth를 찾을 수 없음 - authId: {}", authId)
+    );
+  }
+
+  // ========================================
+  // 내부 메서드
+  // ========================================
+
+  private void validateEmailNotDuplicate(String email,
+      com.tickatch.auth_service.auth.domain.vo.UserType userType) {
     if (authRepository.existsByEmailAndUserType(email, userType)) {
       throw new AuthException(AuthErrorCode.EMAIL_ALREADY_EXISTS);
     }
