@@ -9,6 +9,7 @@ import com.tickatch.auth_service.auth.application.service.command.dto.OAuthLogin
 import com.tickatch.auth_service.auth.application.service.command.dto.OAuthRegisterCommand;
 import com.tickatch.auth_service.auth.application.service.command.dto.RefreshCommand;
 import com.tickatch.auth_service.auth.application.service.command.dto.RegisterCommand;
+import com.tickatch.auth_service.auth.application.service.command.dto.WithdrawCommand;
 import com.tickatch.auth_service.auth.domain.Auth;
 import com.tickatch.auth_service.auth.domain.AuthRepository;
 import com.tickatch.auth_service.auth.domain.exception.AuthErrorCode;
@@ -228,6 +229,33 @@ public class AuthCommandService {
     log.info("비밀번호 변경 완료 - authId: {}", command.authId());
 
     tokenPort.revokeAllTokens(command.authId());
+  }
+
+  // ========================================
+  // 탈퇴 (추후 확장용으로 유지)
+  // ========================================
+
+  /**
+   * 회원탈퇴를 처리한다.
+   *
+   * <p>참고: 일반적인 탈퇴는 User Service를 통해 진행하며, 이 메서드는
+   * 직접 Auth만 탈퇴 처리가 필요한 경우를 위해 유지한다.
+   *
+   * @param command 회원탈퇴 요청
+   * @throws AuthException 비밀번호가 일치하지 않는 경우
+   */
+  public void withdraw(WithdrawCommand command) {
+    Auth auth = authRepository.findById(command.authId())
+        .orElseThrow(() -> new AuthException(AuthErrorCode.AUTH_NOT_FOUND));
+
+    if (!auth.matchesPassword(command.password(), passwordEncoder)) {
+      throw new AuthException(AuthErrorCode.INVALID_CREDENTIALS);
+    }
+
+    auth.withdraw(auth.getId().toString());
+    log.info("회원탈퇴 완료 - authId: {}", command.authId());
+
+    tokenPort.deleteAllTokens(command.authId());
   }
 
   // ========================================
