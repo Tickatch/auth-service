@@ -15,10 +15,12 @@ import org.springframework.web.context.request.ServletRequestAttributes;
  * <p>현재 요청의 인증 헤더와 추적 정보를 다른 서비스로 전파한다.
  *
  * <p>전파하는 헤더:
- *
  * <ul>
- *   <li>X-User-Id: 사용자 ID
- *   <li>X-Request-Id: 요청 추적 ID (MDC에서 가져옴)
+ *   <li>X-User-Id: 사용자 ID</li>
+ *   <li>X-Trace-Id: 커스텀 추적 ID (MdcFilter용)</li>
+ *   <li>X-B3-TraceId: B3 추적 ID (Brave/Zipkin용)</li>
+ *   <li>X-B3-SpanId: B3 스팬 ID (Brave/Zipkin용)</li>
+ *   <li>X-B3-Sampled: 샘플링 여부 (Brave/Zipkin용)</li>
  * </ul>
  *
  * @author Tickatch
@@ -27,8 +29,14 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 @Slf4j
 public class FeignRequestInterceptor implements RequestInterceptor {
 
+  // 커스텀 헤더
   private static final String HEADER_USER_ID = "X-User-Id";
-  private static final String HEADER_REQUEST_ID = "X-Request-Id";
+  private static final String HEADER_TRACE_ID = "X-Trace-Id";
+
+  // B3 헤더 (Brave/Zipkin 표준)
+  private static final String HEADER_B3_TRACE_ID = "X-B3-TraceId";
+  private static final String HEADER_B3_SPAN_ID = "X-B3-SpanId";
+  private static final String HEADER_B3_SAMPLED = "X-B3-Sampled";
 
   @Override
   public void apply(RequestTemplate template) {
@@ -37,16 +45,26 @@ public class FeignRequestInterceptor implements RequestInterceptor {
 
     if (attributes != null) {
       HttpServletRequest request = attributes.getRequest();
-
-      // 인증 헤더 전파
       propagateHeader(request, template, HEADER_USER_ID);
     }
 
-    // MDC의 requestId를 X-Request-Id 헤더로 전파
-    String requestId = MdcUtils.getRequestId();
-    if (StringUtils.hasText(requestId)) {
-      template.header(HEADER_REQUEST_ID, requestId);
-      log.debug("헤더 전파: {} = {}", HEADER_REQUEST_ID, requestId);
+    // Brave가 MDC에 설정한 traceId/spanId 전파
+    String traceId = MdcUtils.get("traceId");
+    String spanId = MdcUtils.get("spanId");
+
+    if (StringUtils.hasText(traceId)) {
+      // 커스텀 헤더 (MdcFilter용)
+      template.header(HEADER_TRACE_ID, traceId);
+
+      // B3 헤더 (Brave가 인식)
+      template.header(HEADER_B3_TRACE_ID, traceId);
+      template.header(HEADER_B3_SAMPLED, "1");
+
+      if (StringUtils.hasText(spanId)) {
+        template.header(HEADER_B3_SPAN_ID, spanId);
+      }
+
+      log.info("헤더 전파: traceId={}, spanId={}", traceId, spanId);
     }
   }
 
