@@ -8,6 +8,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 
+import com.tickatch.auth_service.auth.application.messaging.AuthLogEventPublisher;
 import com.tickatch.auth_service.auth.application.port.out.OAuthPort;
 import com.tickatch.auth_service.auth.application.port.out.TokenPort;
 import com.tickatch.auth_service.auth.application.service.command.dto.LoginResult;
@@ -33,6 +34,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 @DisplayName("OAuthCommandService 테스트")
 @ExtendWith(MockitoExtension.class)
@@ -47,11 +49,14 @@ class OAuthCommandServiceTest {
 
   private PasswordEncoder passwordEncoder;
 
+  @MockitoBean
+  private AuthLogEventPublisher logEventPublisher;
+
   @BeforeEach
   void setUp() {
     passwordEncoder = new BCryptPasswordEncoder();
     oAuthCommandService =
-        new OAuthCommandService(authRepository, oAuthPort, tokenPort, passwordEncoder);
+        new OAuthCommandService(authRepository, oAuthPort, tokenPort, passwordEncoder,logEventPublisher);
   }
 
   private TokenResult createTokenResult() {
