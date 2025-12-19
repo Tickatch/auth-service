@@ -44,7 +44,8 @@ class TokenExceptionTest {
     void 에러코드와_원인_예외_그리고_인자로_예외를_생성한다() {
       RuntimeException cause = new RuntimeException("원인 예외");
 
-      TokenException exception = new TokenException(TokenErrorCode.TOKEN_REUSE_DETECTED, cause, "token-id");
+      TokenException exception =
+          new TokenException(TokenErrorCode.TOKEN_REUSE_DETECTED, cause, "token-id");
 
       assertThat(exception.getErrorCode()).isEqualTo(TokenErrorCode.TOKEN_REUSE_DETECTED);
       assertThat(exception.getCause()).isEqualTo(cause);

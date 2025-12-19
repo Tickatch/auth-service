@@ -20,55 +20,33 @@ import java.util.UUID;
  * @param linkAuthId 계정 연동 시 기존 Auth ID (연동이 아닌 경우 null)
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public record OAuthState(
-    String nonce,
-    boolean rememberMe,
-    String deviceInfo,
-    UUID linkAuthId
-) {
+public record OAuthState(String nonce, boolean rememberMe, String deviceInfo, UUID linkAuthId) {
 
   private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
-  /**
-   * 로그인용 상태값 생성.
-   */
+  /** 로그인용 상태값 생성. */
   public static OAuthState forLogin(boolean rememberMe, String deviceInfo) {
-    return new OAuthState(
-        UUID.randomUUID().toString(),
-        rememberMe,
-        deviceInfo,
-        null
-    );
+    return new OAuthState(UUID.randomUUID().toString(), rememberMe, deviceInfo, null);
   }
 
-  /**
-   * 계정 연동용 상태값 생성.
-   */
+  /** 계정 연동용 상태값 생성. */
   public static OAuthState forLink(UUID authId, String deviceInfo) {
-    return new OAuthState(
-        UUID.randomUUID().toString(),
-        false,
-        deviceInfo,
-        authId
-    );
+    return new OAuthState(UUID.randomUUID().toString(), false, deviceInfo, authId);
   }
 
-  /**
-   * Base64 인코딩된 문자열로 변환.
-   */
+  /** Base64 인코딩된 문자열로 변환. */
   public String encode() {
     try {
       String json = OBJECT_MAPPER.writeValueAsString(this);
-      return Base64.getUrlEncoder().withoutPadding()
+      return Base64.getUrlEncoder()
+          .withoutPadding()
           .encodeToString(json.getBytes(StandardCharsets.UTF_8));
     } catch (JsonProcessingException e) {
       throw new IllegalStateException("Failed to encode OAuth state", e);
     }
   }
 
-  /**
-   * Base64 인코딩된 문자열에서 복원.
-   */
+  /** Base64 인코딩된 문자열에서 복원. */
   public static OAuthState decode(String encoded) {
     try {
       byte[] decoded = Base64.getUrlDecoder().decode(encoded);
@@ -79,9 +57,7 @@ public record OAuthState(
     }
   }
 
-  /**
-   * 계정 연동 요청인지 확인.
-   */
+  /** 계정 연동 요청인지 확인. */
   public boolean isLinkRequest() {
     return linkAuthId != null;
   }

@@ -26,13 +26,14 @@ public record AuthInfo(
     AuthStatus status,
     LocalDateTime lastLoginAt,
     List<ProviderType> providers,
-    LocalDateTime createdAt
-) {
+    LocalDateTime createdAt) {
+
+  public AuthInfo {
+    providers = providers == null ? List.of() : List.copyOf(providers);
+  }
 
   public static AuthInfo from(Auth auth) {
-    List<ProviderType> providers = auth.getProviders().stream()
-        .map(p -> p.getProvider())
-        .toList();
+    List<ProviderType> providers = auth.getProviders().stream().map(p -> p.getProvider()).toList();
 
     return new AuthInfo(
         auth.getId(),
@@ -41,7 +42,6 @@ public record AuthInfo(
         auth.getStatus(),
         auth.getLastLoginAt(),
         providers,
-        auth.getCreatedAt()
-    );
+        auth.getCreatedAt());
   }
 }

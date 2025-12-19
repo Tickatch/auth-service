@@ -28,25 +28,18 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 @ExtendWith(MockitoExtension.class)
 class AuthQueryServiceTest {
 
-  @InjectMocks
-  private AuthQueryService authQueryService;
+  @InjectMocks private AuthQueryService authQueryService;
 
-  @Mock
-  private AuthRepository authRepository;
+  @Mock private AuthRepository authRepository;
 
   private Auth createAuth() {
     return Auth.register(
-        "test@test.com",
-        "Password123!",
-        UserType.CUSTOMER,
-        new BCryptPasswordEncoder(),
-        "SYSTEM"
-    );
+        "test@test.com", "Password123!", UserType.CUSTOMER, new BCryptPasswordEncoder(), "SYSTEM");
   }
-  
+
   @Nested
   class findById_테스트 {
-    
+
     @Test
     void Auth_ID로_조회_성공한다() {
       Auth auth = createAuth();
@@ -60,7 +53,7 @@ class AuthQueryServiceTest {
       assertThat(result.email()).isEqualTo("test@test.com");
       assertThat(result.userType()).isEqualTo(UserType.CUSTOMER);
     }
-    
+
     @Test
     void 존재하지_않는_ID_조회_시_실패한다() {
       UUID authId = UUID.randomUUID();
@@ -71,10 +64,10 @@ class AuthQueryServiceTest {
           .hasFieldOrPropertyWithValue("errorCode", AuthErrorCode.AUTH_NOT_FOUND);
     }
   }
-  
+
   @Nested
   class findByIdOptional_테스트 {
-    
+
     @Test
     void 존재하면_Optional_of_반환한다() {
       Auth auth = createAuth();
@@ -109,8 +102,8 @@ class AuthQueryServiceTest {
       given(authRepository.findByEmailAndUserType("test@test.com", UserType.CUSTOMER))
           .willReturn(Optional.of(auth));
 
-      Optional<AuthInfo> result = authQueryService.findByEmailAndUserType(
-          "test@test.com", UserType.CUSTOMER);
+      Optional<AuthInfo> result =
+          authQueryService.findByEmailAndUserType("test@test.com", UserType.CUSTOMER);
 
       assertThat(result).isPresent();
       assertThat(result.get().email()).isEqualTo("test@test.com");
@@ -118,11 +111,10 @@ class AuthQueryServiceTest {
 
     @Test
     void 존재하지_않으면_Optional_empty로_반환한다() {
-      given(authRepository.findByEmailAndUserType(anyString(), any()))
-          .willReturn(Optional.empty());
+      given(authRepository.findByEmailAndUserType(anyString(), any())).willReturn(Optional.empty());
 
-      Optional<AuthInfo> result = authQueryService.findByEmailAndUserType(
-          "notfound@test.com", UserType.CUSTOMER);
+      Optional<AuthInfo> result =
+          authQueryService.findByEmailAndUserType("notfound@test.com", UserType.CUSTOMER);
 
       assertThat(result).isEmpty();
     }
@@ -133,21 +125,21 @@ class AuthQueryServiceTest {
 
     @Test
     void 소셜_로그인_정보로_조회를_성공한다() {
-      Auth auth = Auth.registerWithOAuth(
-          "test@test.com",
-          "Password123!",
-          UserType.CUSTOMER,
-          ProviderType.KAKAO,
-          "kakao123",
-          new BCryptPasswordEncoder(),
-          "SYSTEM"
-      );
+      Auth auth =
+          Auth.registerWithOAuth(
+              "test@test.com",
+              "Password123!",
+              UserType.CUSTOMER,
+              ProviderType.KAKAO,
+              "kakao123",
+              new BCryptPasswordEncoder(),
+              "SYSTEM");
 
       given(authRepository.findByProviderAndProviderUserId(ProviderType.KAKAO, "kakao123"))
           .willReturn(Optional.of(auth));
 
-      Optional<AuthInfo> result = authQueryService.findByProviderInfo(
-          ProviderType.KAKAO, "kakao123");
+      Optional<AuthInfo> result =
+          authQueryService.findByProviderInfo(ProviderType.KAKAO, "kakao123");
 
       assertThat(result).isPresent();
       assertThat(result.get().email()).isEqualTo("test@test.com");
@@ -162,8 +154,8 @@ class AuthQueryServiceTest {
       given(authRepository.existsByEmailAndUserType("test@test.com", UserType.CUSTOMER))
           .willReturn(true);
 
-      boolean result = authQueryService.existsByEmailAndUserType(
-          "test@test.com", UserType.CUSTOMER);
+      boolean result =
+          authQueryService.existsByEmailAndUserType("test@test.com", UserType.CUSTOMER);
 
       assertThat(result).isTrue();
     }
@@ -173,8 +165,7 @@ class AuthQueryServiceTest {
       given(authRepository.existsByEmailAndUserType("new@test.com", UserType.CUSTOMER))
           .willReturn(false);
 
-      boolean result = authQueryService.existsByEmailAndUserType(
-          "new@test.com", UserType.CUSTOMER);
+      boolean result = authQueryService.existsByEmailAndUserType("new@test.com", UserType.CUSTOMER);
 
       assertThat(result).isFalse();
     }

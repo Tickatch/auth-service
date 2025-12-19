@@ -23,16 +23,21 @@ class TokenErrorCodeTest {
     @Test
     void 에러코드_400은_BAD_REQUEST_상태를_가진다() {
 
-      assertThat(TokenErrorCode.INVALID_TOKEN.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST.value());
-      assertThat(TokenErrorCode.INVALID_REFRESH_TOKEN.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST.value());
-      assertThat(TokenErrorCode.INVALID_TOKEN_FORMAT.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST.value());
+      assertThat(TokenErrorCode.INVALID_TOKEN.getStatus())
+          .isEqualTo(HttpStatus.BAD_REQUEST.value());
+      assertThat(TokenErrorCode.INVALID_REFRESH_TOKEN.getStatus())
+          .isEqualTo(HttpStatus.BAD_REQUEST.value());
+      assertThat(TokenErrorCode.INVALID_TOKEN_FORMAT.getStatus())
+          .isEqualTo(HttpStatus.BAD_REQUEST.value());
     }
 
     @Test
     void 에러코드_401은_UNAUTHORIZED_상태를_가진다() {
 
-      assertThat(TokenErrorCode.TOKEN_EXPIRED.getStatus()).isEqualTo(HttpStatus.UNAUTHORIZED.value());
-      assertThat(TokenErrorCode.REFRESH_TOKEN_EXPIRED.getStatus()).isEqualTo(HttpStatus.UNAUTHORIZED.value());
+      assertThat(TokenErrorCode.TOKEN_EXPIRED.getStatus())
+          .isEqualTo(HttpStatus.UNAUTHORIZED.value());
+      assertThat(TokenErrorCode.REFRESH_TOKEN_EXPIRED.getStatus())
+          .isEqualTo(HttpStatus.UNAUTHORIZED.value());
     }
 
     @Test
@@ -51,7 +56,8 @@ class TokenErrorCodeTest {
     @Test
     void 각_에러코드는_고유한_코드_문자열을_가진다() {
 
-      assertThat(TokenErrorCode.REFRESH_TOKEN_NOT_FOUND.getCode()).isEqualTo("REFRESH_TOKEN_NOT_FOUND");
+      assertThat(TokenErrorCode.REFRESH_TOKEN_NOT_FOUND.getCode())
+          .isEqualTo("REFRESH_TOKEN_NOT_FOUND");
       assertThat(TokenErrorCode.INVALID_TOKEN.getCode()).isEqualTo("INVALID_TOKEN");
       assertThat(TokenErrorCode.TOKEN_EXPIRED.getCode()).isEqualTo("TOKEN_EXPIRED");
       assertThat(TokenErrorCode.TOKEN_ALREADY_REVOKED.getCode()).isEqualTo("TOKEN_ALREADY_REVOKED");

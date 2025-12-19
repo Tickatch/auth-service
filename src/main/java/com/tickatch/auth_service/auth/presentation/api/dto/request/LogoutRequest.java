@@ -9,10 +9,7 @@ import java.util.UUID;
  * @param refreshToken Refresh Token (현재 세션)
  * @param allDevices 모든 기기에서 로그아웃 여부
  */
-public record LogoutRequest(
-    String refreshToken,
-    boolean allDevices
-) {
+public record LogoutRequest(String refreshToken, boolean allDevices) {
 
   /**
    * Command로 변환한다.

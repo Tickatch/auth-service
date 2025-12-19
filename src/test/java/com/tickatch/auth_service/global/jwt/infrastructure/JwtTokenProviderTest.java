@@ -1,6 +1,5 @@
 package com.tickatch.auth_service.global.jwt.infrastructure;
 
-
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.tickatch.auth_service.auth.domain.vo.UserType;
@@ -37,9 +36,7 @@ class JwtTokenProviderTest {
     KeyPair keyPair = keyPairGenerator.generateKeyPair();
 
     return new TestRsaKeyManager(
-        (RSAPrivateKey) keyPair.getPrivate(),
-        (RSAPublicKey) keyPair.getPublic()
-    );
+        (RSAPrivateKey) keyPair.getPrivate(), (RSAPublicKey) keyPair.getPublic());
   }
 
   @Nested

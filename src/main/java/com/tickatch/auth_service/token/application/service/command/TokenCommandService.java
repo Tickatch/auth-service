@@ -46,38 +46,32 @@ public class TokenCommandService {
     String accessToken = tokenProvider.generateAccessToken(command.authId(), command.userType());
     String refreshTokenValue = tokenProvider.generateRefreshTokenValue();
 
-    RefreshToken refreshToken = RefreshToken.create(
-        command.authId(),
-        refreshTokenValue,
-        command.deviceInfo(),
-        command.rememberMe()
-    );
+    RefreshToken refreshToken =
+        RefreshToken.create(
+            command.authId(), refreshTokenValue, command.deviceInfo(), command.rememberMe());
 
     refreshTokenRepository.save(refreshToken);
 
     log.info("토큰 발급 완료 - authId: {}, deviceInfo: {}", command.authId(), command.deviceInfo());
 
     return TokenResult.of(
-        accessToken,
-        refreshTokenValue,
-        calculateAccessTokenExpiry(),
-        refreshToken.getExpiresAt()
-    );
+        accessToken, refreshTokenValue, calculateAccessTokenExpiry(), refreshToken.getExpiresAt());
   }
 
   /**
    * 토큰을 갱신한다 (Rotation).
    *
-   * <p>기존 Refresh Token을 검증하고, 새로운 Access Token과 Refresh Token을 발급한다. 기존 Refresh Token은
-   * 새 값으로 교체된다.
+   * <p>기존 Refresh Token을 검증하고, 새로운 Access Token과 Refresh Token을 발급한다. 기존 Refresh Token은 새 값으로 교체된다.
    *
    * @param command 토큰 갱신 요청
    * @return 갱신된 토큰 정보
    * @throws TokenException 토큰이 유효하지 않은 경우
    */
   public TokenResult refreshTokens(RefreshTokenCommand command) {
-    RefreshToken refreshToken = refreshTokenRepository.findByToken(command.refreshToken())
-        .orElseThrow(() -> new TokenException(TokenErrorCode.INVALID_REFRESH_TOKEN));
+    RefreshToken refreshToken =
+        refreshTokenRepository
+            .findByToken(command.refreshToken())
+            .orElseThrow(() -> new TokenException(TokenErrorCode.INVALID_REFRESH_TOKEN));
 
     // 이미 폐기된 토큰 사용 시도 감지 (탈취 가능성)
     if (refreshToken.isRevoked()) {
@@ -91,8 +85,10 @@ public class TokenCommandService {
     refreshToken.validateUsable();
 
     // Auth에서 userType 조회
-    var userType = authPort.findUserTypeByAuthId(refreshToken.getAuthId())
-        .orElseThrow(() -> new TokenException(TokenErrorCode.AUTH_NOT_FOUND));
+    var userType =
+        authPort
+            .findUserTypeByAuthId(refreshToken.getAuthId())
+            .orElseThrow(() -> new TokenException(TokenErrorCode.AUTH_NOT_FOUND));
 
     // 새 Access Token 생성
     String newAccessToken = tokenProvider.generateAccessToken(refreshToken.getAuthId(), userType);
@@ -107,8 +103,7 @@ public class TokenCommandService {
         newAccessToken,
         newRefreshTokenValue,
         calculateAccessTokenExpiry(),
-        refreshToken.getExpiresAt()
-    );
+        refreshToken.getExpiresAt());
   }
 
   /**
@@ -121,8 +116,10 @@ public class TokenCommandService {
    * @throws TokenException 토큰이 유효하지 않은 경우
    */
   public RefreshToken validateAndGetRefreshToken(String refreshTokenValue) {
-    RefreshToken refreshToken = refreshTokenRepository.findByToken(refreshTokenValue)
-        .orElseThrow(() -> new TokenException(TokenErrorCode.INVALID_REFRESH_TOKEN));
+    RefreshToken refreshToken =
+        refreshTokenRepository
+            .findByToken(refreshTokenValue)
+            .orElseThrow(() -> new TokenException(TokenErrorCode.INVALID_REFRESH_TOKEN));
 
     if (refreshToken.isRevoked()) {
       log.warn("폐기된 토큰 재사용 시도 감지 - authId: {}", refreshToken.getAuthId());
@@ -152,11 +149,13 @@ public class TokenCommandService {
    * @param refreshTokenValue Refresh Token 값
    */
   public void revokeToken(String refreshTokenValue) {
-    refreshTokenRepository.findByToken(refreshTokenValue)
-        .ifPresent(token -> {
-          token.revoke();
-          log.info("토큰 폐기 완료 - tokenId: {}", token.getId());
-        });
+    refreshTokenRepository
+        .findByToken(refreshTokenValue)
+        .ifPresent(
+            token -> {
+              token.revoke();
+              log.info("토큰 폐기 완료 - tokenId: {}", token.getId());
+            });
   }
 
   /**
@@ -179,9 +178,7 @@ public class TokenCommandService {
     log.info("모든 토큰 삭제 완료 - authId: {}", authId);
   }
 
-  /**
-   * Access Token 만료 시간을 계산한다.
-   */
+  /** Access Token 만료 시간을 계산한다. */
   private LocalDateTime calculateAccessTokenExpiry() {
     return LocalDateTime.now().plusSeconds(tokenProvider.getAccessTokenExpirationSeconds());
   }

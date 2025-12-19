@@ -13,6 +13,7 @@ import org.springframework.web.client.RestTemplate;
  * <p>네이버 로그인 API를 사용하여 인증을 처리한다.
  *
  * <p>네이버 사용자 정보 응답 형식:
+ *
  * <pre>
  * {
  *   "resultcode": "00",

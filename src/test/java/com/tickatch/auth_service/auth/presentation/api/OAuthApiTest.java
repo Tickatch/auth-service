@@ -1,6 +1,5 @@
 package com.tickatch.auth_service.auth.presentation.api;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
@@ -36,26 +35,22 @@ import org.springframework.test.web.servlet.MockMvc;
 @AutoConfigureMockMvc(addFilters = false)
 class OAuthApiTest {
 
-  @Autowired
-  private MockMvc mockMvc;
+  @Autowired private MockMvc mockMvc;
 
-  @MockitoBean
-  private OAuthCommandService oAuthCommandService;
+  @MockitoBean private OAuthCommandService oAuthCommandService;
 
-  @MockitoBean
-  private OAuthProperties oAuthProperties;
+  @MockitoBean private OAuthProperties oAuthProperties;
 
-  @Autowired
-  private ObjectMapper objectMapper;
+  @Autowired private ObjectMapper objectMapper;
 
   private LoginResult createLoginResult() {
     UUID authId = UUID.randomUUID();
-    TokenResult tokenResult = TokenResult.of(
-        "access-token",
-        "refresh-token",
-        LocalDateTime.now().plusMinutes(5),
-        LocalDateTime.now().plusDays(7)
-    );
+    TokenResult tokenResult =
+        TokenResult.of(
+            "access-token",
+            "refresh-token",
+            LocalDateTime.now().plusMinutes(5),
+            LocalDateTime.now().plusDays(7));
     return LoginResult.of(authId, "test@test.com", UserType.CUSTOMER, tokenResult);
   }
 
@@ -70,7 +65,8 @@ class OAuthApiTest {
       given(oAuthCommandService.getAuthorizationUrl(eq(ProviderType.KAKAO), eq(false), anyString()))
           .willReturn(authUrl);
 
-      mockMvc.perform(get("/api/v1/auth/oauth/kakao"))
+      mockMvc
+          .perform(get("/api/v1/auth/oauth/kakao"))
           .andExpect(status().is3xxRedirection())
           .andExpect(redirectedUrl(authUrl));
     }
@@ -82,7 +78,8 @@ class OAuthApiTest {
       given(oAuthCommandService.getAuthorizationUrl(eq(ProviderType.NAVER), eq(false), anyString()))
           .willReturn(authUrl);
 
-      mockMvc.perform(get("/api/v1/auth/oauth/naver"))
+      mockMvc
+          .perform(get("/api/v1/auth/oauth/naver"))
           .andExpect(status().is3xxRedirection())
           .andExpect(redirectedUrl(authUrl));
     }
@@ -91,10 +88,13 @@ class OAuthApiTest {
     void 구글_로그인_리다이렉트가_성공한다() throws Exception {
       String authUrl = "https://accounts.google.com/o/oauth2/v2/auth?client_id=xxx";
 
-      given(oAuthCommandService.getAuthorizationUrl(eq(ProviderType.GOOGLE), eq(false), anyString()))
+      given(
+              oAuthCommandService.getAuthorizationUrl(
+                  eq(ProviderType.GOOGLE), eq(false), anyString()))
           .willReturn(authUrl);
 
-      mockMvc.perform(get("/api/v1/auth/oauth/google"))
+      mockMvc
+          .perform(get("/api/v1/auth/oauth/google"))
           .andExpect(status().is3xxRedirection())
           .andExpect(redirectedUrl(authUrl));
     }
@@ -106,8 +106,8 @@ class OAuthApiTest {
       given(oAuthCommandService.getAuthorizationUrl(eq(ProviderType.KAKAO), eq(true), anyString()))
           .willReturn(authUrl);
 
-      mockMvc.perform(get("/api/v1/auth/oauth/kakao")
-              .param("rememberMe", "true"))
+      mockMvc
+          .perform(get("/api/v1/auth/oauth/kakao").param("rememberMe", "true"))
           .andExpect(status().is3xxRedirection())
           .andExpect(redirectedUrl(authUrl));
     }
@@ -119,28 +119,33 @@ class OAuthApiTest {
 
     @Test
     void 콜백_처리에_성공하면_프론트엔드로_리다이렉트한다() throws Exception {
-      given(oAuthCommandService.handleCallback(eq(ProviderType.KAKAO), eq("auth-code"), eq("state-value")))
+      given(
+              oAuthCommandService.handleCallback(
+                  eq(ProviderType.KAKAO), eq("auth-code"), eq("state-value")))
           .willReturn(createLoginResult());
 
-      mockMvc.perform(get("/api/v1/auth/oauth/kakao/callback")
-              .param("code", "auth-code")
-              .param("state", "state-value"))
+      mockMvc
+          .perform(
+              get("/api/v1/auth/oauth/kakao/callback")
+                  .param("code", "auth-code")
+                  .param("state", "state-value"))
           .andExpect(status().is3xxRedirection())
-          .andExpect(redirectedUrlPattern("http://localhost:3000/oauth/callback?success=true&data=*"));
+          .andExpect(
+              redirectedUrlPattern("http://localhost:3000/oauth/callback?success=true&data=*"));
     }
 
     @Test
     void 로그인_취소_시_에러와_함께_리다이렉트한다() throws Exception {
-      mockMvc.perform(get("/api/v1/auth/oauth/kakao/callback")
-              .param("error", "access_denied"))
+      mockMvc
+          .perform(get("/api/v1/auth/oauth/kakao/callback").param("error", "access_denied"))
           .andExpect(status().is3xxRedirection())
           .andExpect(redirectedUrlPattern("http://localhost:3000/oauth/callback?error=*"));
     }
 
     @Test
     void code가_없으면_에러와_함께_리다이렉트한다() throws Exception {
-      mockMvc.perform(get("/api/v1/auth/oauth/kakao/callback")
-              .param("state", "state-value"))
+      mockMvc
+          .perform(get("/api/v1/auth/oauth/kakao/callback").param("state", "state-value"))
           .andExpect(status().is3xxRedirection())
           .andExpect(redirectedUrlPattern("http://localhost:3000/oauth/callback?error=*"));
     }
@@ -158,8 +163,8 @@ class OAuthApiTest {
       given(oAuthCommandService.getLinkUrl(eq(ProviderType.KAKAO), eq(authId), anyString()))
           .willReturn(linkUrl);
 
-      mockMvc.perform(get("/api/v1/auth/oauth/kakao/link")
-              .header("X-user-Id", authId.toString()))
+      mockMvc
+          .perform(get("/api/v1/auth/oauth/kakao/link").header("X-user-Id", authId.toString()))
           .andExpect(status().is3xxRedirection())
           .andExpect(redirectedUrl(linkUrl));
     }
@@ -175,8 +180,8 @@ class OAuthApiTest {
 
       doNothing().when(oAuthCommandService).unlinkProvider(eq(authId), eq(ProviderType.KAKAO));
 
-      mockMvc.perform(delete("/api/v1/auth/oauth/kakao/unlink")
-              .header("X-user-Id", authId.toString()))
+      mockMvc
+          .perform(delete("/api/v1/auth/oauth/kakao/unlink").header("X-user-Id", authId.toString()))
           .andExpect(status().isNoContent());
     }
   }
@@ -186,9 +191,8 @@ class OAuthApiTest {
 
     @Test
     void 지원하지_않는_provider는_예외를_발생시킨다() {
-      assertThatThrownBy(() ->
-          mockMvc.perform(get("/api/v1/auth/oauth/invalid"))
-      ).hasCauseInstanceOf(AuthException.class);
+      assertThatThrownBy(() -> mockMvc.perform(get("/api/v1/auth/oauth/invalid")))
+          .hasCauseInstanceOf(AuthException.class);
     }
   }
 }

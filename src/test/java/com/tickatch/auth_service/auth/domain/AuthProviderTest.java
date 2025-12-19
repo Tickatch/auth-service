@@ -20,7 +20,8 @@ class AuthProviderTest {
 
     @Test
     void AuthProvider를_생성한다() {
-      Auth auth = Auth.register("test@example.com", "Pass123!", UserType.CUSTOMER, encoder, "SYSTEM");
+      Auth auth =
+          Auth.register("test@example.com", "Pass123!", UserType.CUSTOMER, encoder, "SYSTEM");
 
       AuthProvider provider = AuthProvider.create(auth, ProviderType.KAKAO, "kakao123");
 
@@ -33,7 +34,8 @@ class AuthProviderTest {
 
     @Test
     void 각_제공자_타입으로_생성할_수_있다() {
-      Auth auth = Auth.register("test@example.com", "Pass123!", UserType.CUSTOMER, encoder, "SYSTEM");
+      Auth auth =
+          Auth.register("test@example.com", "Pass123!", UserType.CUSTOMER, encoder, "SYSTEM");
 
       AuthProvider kakaoProvider = AuthProvider.create(auth, ProviderType.KAKAO, "kakao123");
       AuthProvider naverProvider = AuthProvider.create(auth, ProviderType.NAVER, "naver123");
@@ -50,7 +52,8 @@ class AuthProviderTest {
 
     @Test
     void 동일한_ID를_가진_AuthProvider는_길다() {
-      Auth auth = Auth.register("test@example.com", "Pass123!", UserType.CUSTOMER, encoder, "SYSTEM");
+      Auth auth =
+          Auth.register("test@example.com", "Pass123!", UserType.CUSTOMER, encoder, "SYSTEM");
       AuthProvider provider1 = AuthProvider.create(auth, ProviderType.KAKAO, "kakao123");
       AuthProvider provider2 = provider1;
 
@@ -60,7 +63,8 @@ class AuthProviderTest {
 
     @Test
     void 다른_ID를_가진_AuthProvider는_다르다() {
-      Auth auth = Auth.register("test@example.com", "Pass123!", UserType.CUSTOMER, encoder, "SYSTEM");
+      Auth auth =
+          Auth.register("test@example.com", "Pass123!", UserType.CUSTOMER, encoder, "SYSTEM");
       AuthProvider provider1 = AuthProvider.create(auth, ProviderType.KAKAO, "kakao123");
       AuthProvider provider2 = AuthProvider.create(auth, ProviderType.KAKAO, "kakao123");
 

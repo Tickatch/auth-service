@@ -1,7 +1,6 @@
 package com.tickatch.auth_service.token.application.service.query;
 
 import com.tickatch.auth_service.token.application.service.query.dto.TokenInfo;
-import com.tickatch.auth_service.token.domain.RefreshToken;
 import com.tickatch.auth_service.token.domain.RefreshTokenRepository;
 import com.tickatch.auth_service.token.domain.repository.dto.RefreshTokenResponse;
 import com.tickatch.auth_service.token.domain.repository.dto.RefreshTokenSearchCondition;
@@ -36,8 +35,7 @@ public class TokenQueryService {
    * @return 토큰 정보
    */
   public Optional<TokenInfo> findById(UUID tokenId) {
-    return refreshTokenRepository.findById(tokenId)
-        .map(TokenInfo::from);
+    return refreshTokenRepository.findById(tokenId).map(TokenInfo::from);
   }
 
   /**
@@ -47,8 +45,7 @@ public class TokenQueryService {
    * @return 토큰 정보
    */
   public Optional<TokenInfo> findByToken(String tokenValue) {
-    return refreshTokenRepository.findByToken(tokenValue)
-        .map(TokenInfo::from);
+    return refreshTokenRepository.findByToken(tokenValue).map(TokenInfo::from);
   }
 
   /**
@@ -58,9 +55,7 @@ public class TokenQueryService {
    * @return 토큰 목록
    */
   public List<TokenInfo> findAllByAuthId(UUID authId) {
-    return refreshTokenRepository.findAllByAuthId(authId).stream()
-        .map(TokenInfo::from)
-        .toList();
+    return refreshTokenRepository.findAllByAuthId(authId).stream().map(TokenInfo::from).toList();
   }
 
   /**
@@ -82,8 +77,10 @@ public class TokenQueryService {
    * @param pageable 페이징 정보
    * @return 토큰 목록 (페이징)
    */
-  public Page<RefreshTokenResponse> searchTokens(RefreshTokenSearchCondition condition, Pageable pageable) {
-    return refreshTokenRepository.findAllByCondition(condition, pageable)
+  public Page<RefreshTokenResponse> searchTokens(
+      RefreshTokenSearchCondition condition, Pageable pageable) {
+    return refreshTokenRepository
+        .findAllByCondition(condition, pageable)
         .map(RefreshTokenResponse::from);
   }
 

@@ -47,11 +47,13 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 @Table(
     name = "auths",
     uniqueConstraints = {
-        @UniqueConstraint(name = "uk_auth_email_user_type", columnNames = {"email", "user_type"})
+      @UniqueConstraint(
+          name = "uk_auth_email_user_type",
+          columnNames = {"email", "user_type"})
     })
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Auth extends AbstractAuditEntity {
+public final class Auth extends AbstractAuditEntity {
 
   /* 최대 로그인 실패 허용 횟수 */
   private static final int MAX_LOGIN_FAIL_COUNT = 5;
@@ -71,8 +73,7 @@ public class Auth extends AbstractAuditEntity {
   private UserType userType;
 
   /* 비밀번호 */
-  @Embedded
-  private Password password;
+  @Embedded private Password password;
 
   /* 계정 상태 */
   @Enumerated(EnumType.STRING)

@@ -28,7 +28,8 @@ public class TokenAdapter implements TokenPort {
   private final TokenProvider tokenProvider;
 
   @Override
-  public TokenResult issueTokens(UUID authId, UserType userType, String deviceInfo, boolean rememberMe) {
+  public TokenResult issueTokens(
+      UUID authId, UserType userType, String deviceInfo, boolean rememberMe) {
     IssueTokenCommand command = IssueTokenCommand.of(authId, userType, deviceInfo, rememberMe);
     return tokenCommandService.issueTokens(command);
   }
@@ -45,15 +46,11 @@ public class TokenAdapter implements TokenPort {
     String newRefreshTokenValue = tokenCommandService.rotateRefreshToken(refreshToken);
 
     // 4. Access Token 만료 시간 계산
-    LocalDateTime accessTokenExpiresAt = LocalDateTime.now()
-        .plusSeconds(tokenProvider.getAccessTokenExpirationSeconds());
+    LocalDateTime accessTokenExpiresAt =
+        LocalDateTime.now().plusSeconds(tokenProvider.getAccessTokenExpirationSeconds());
 
     return TokenResult.of(
-        newAccessToken,
-        newRefreshTokenValue,
-        accessTokenExpiresAt,
-        refreshToken.getExpiresAt()
-    );
+        newAccessToken, newRefreshTokenValue, accessTokenExpiresAt, refreshToken.getExpiresAt());
   }
 
   @Override

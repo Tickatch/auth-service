@@ -17,6 +17,7 @@ import org.springframework.stereotype.Component;
  * JWT 토큰 생성 및 검증 구현체 (RS256).
  *
  * <p>RSA 비대칭키를 사용하여 JWT를 생성하고 검증한다.
+ *
  * <ul>
  *   <li>서명: Private Key 사용 (Auth Service만 보유)
  *   <li>검증: Public Key 사용 (Gateway, 다른 서비스에 공개 가능)
@@ -65,10 +66,7 @@ public class JwtTokenProvider implements TokenProvider {
       return false;
     }
     try {
-      Jwts.parser()
-          .verifyWith(rsaKeyManager.getPublicKey())
-          .build()
-          .parseSignedClaims(token);
+      Jwts.parser().verifyWith(rsaKeyManager.getPublicKey()).build().parseSignedClaims(token);
       return true;
     } catch (ExpiredJwtException e) {
       log.debug("만료된 JWT 토큰: {}", e.getMessage());

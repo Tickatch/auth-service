@@ -30,17 +30,13 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class TokenCommandServiceTest {
 
-  @InjectMocks
-  private TokenCommandService tokenCommandService;
+  @InjectMocks private TokenCommandService tokenCommandService;
 
-  @Mock
-  private TokenProvider tokenProvider;
+  @Mock private TokenProvider tokenProvider;
 
-  @Mock
-  private RefreshTokenRepository refreshTokenRepository;
+  @Mock private RefreshTokenRepository refreshTokenRepository;
 
-  @Mock
-  private AuthPort authPort;
+  @Mock private AuthPort authPort;
 
   @Nested
   class 토큰_발급_테스트 {
@@ -48,15 +44,13 @@ class TokenCommandServiceTest {
     @Test
     void 토큰_발급을_성공한다() {
       UUID authId = UUID.randomUUID();
-      IssueTokenCommand command = IssueTokenCommand.of(
-          authId, UserType.CUSTOMER, "device-info", false);
+      IssueTokenCommand command =
+          IssueTokenCommand.of(authId, UserType.CUSTOMER, "device-info", false);
 
       given(tokenProvider.generateAccessToken(authId, UserType.CUSTOMER))
           .willReturn("access-token");
-      given(tokenProvider.generateRefreshTokenValue())
-          .willReturn("refresh-token-value");
-      given(tokenProvider.getAccessTokenExpirationSeconds())
-          .willReturn(300L);
+      given(tokenProvider.generateRefreshTokenValue()).willReturn("refresh-token-value");
+      given(tokenProvider.getAccessTokenExpirationSeconds()).willReturn(300L);
       given(refreshTokenRepository.save(any(RefreshToken.class)))
           .willAnswer(inv -> inv.getArgument(0));
 
@@ -79,16 +73,12 @@ class TokenCommandServiceTest {
 
       RefreshTokenCommand command = RefreshTokenCommand.of("old-token");
 
-      given(refreshTokenRepository.findByToken("old-token"))
-          .willReturn(Optional.of(refreshToken));
-      given(authPort.findUserTypeByAuthId(authId))
-          .willReturn(Optional.of(UserType.CUSTOMER));
+      given(refreshTokenRepository.findByToken("old-token")).willReturn(Optional.of(refreshToken));
+      given(authPort.findUserTypeByAuthId(authId)).willReturn(Optional.of(UserType.CUSTOMER));
       given(tokenProvider.generateAccessToken(authId, UserType.CUSTOMER))
           .willReturn("new-access-token");
-      given(tokenProvider.generateRefreshTokenValue())
-          .willReturn("new-refresh-token");
-      given(tokenProvider.getAccessTokenExpirationSeconds())
-          .willReturn(300L);
+      given(tokenProvider.generateRefreshTokenValue()).willReturn("new-refresh-token");
+      given(tokenProvider.getAccessTokenExpirationSeconds()).willReturn(300L);
 
       TokenResult result = tokenCommandService.refreshTokens(command);
 
@@ -101,8 +91,7 @@ class TokenCommandServiceTest {
     void 존재하지_않는_토큰으로_갱신_시_실패한다() {
       RefreshTokenCommand command = RefreshTokenCommand.of("invalid-token");
 
-      given(refreshTokenRepository.findByToken("invalid-token"))
-          .willReturn(Optional.empty());
+      given(refreshTokenRepository.findByToken("invalid-token")).willReturn(Optional.empty());
 
       assertThatThrownBy(() -> tokenCommandService.refreshTokens(command))
           .isInstanceOf(TokenException.class)

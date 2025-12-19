@@ -17,16 +17,14 @@ public record OAuthLoginCommand(
     String providerUserId,
     UserType userType,
     String deviceInfo,
-    boolean rememberMe
-) {
+    boolean rememberMe) {
 
   public static OAuthLoginCommand of(
       ProviderType providerType,
       String providerUserId,
       UserType userType,
       String deviceInfo,
-      boolean rememberMe
-  ) {
+      boolean rememberMe) {
     return new OAuthLoginCommand(providerType, providerUserId, userType, deviceInfo, rememberMe);
   }
 }

@@ -25,11 +25,9 @@ import org.springframework.test.web.servlet.MockMvc;
 @AutoConfigureMockMvc(addFilters = false)
 class JwtKeyControllerTest {
 
-  @Autowired
-  private MockMvc mockMvc;
+  @Autowired private MockMvc mockMvc;
 
-  @MockitoBean
-  private TokenProvider tokenProvider;
+  @MockitoBean private TokenProvider tokenProvider;
 
   private RSAPublicKey publicKey;
 
@@ -50,7 +48,8 @@ class JwtKeyControllerTest {
       given(tokenProvider.getPublicKey()).willReturn(publicKey);
       given(tokenProvider.getKeyId()).willReturn("test-key-id");
 
-      mockMvc.perform(get("/.well-known/jwks.json"))
+      mockMvc
+          .perform(get("/.well-known/jwks.json"))
           .andExpect(status().isOk())
           .andExpect(jsonPath("$.keys").isArray())
           .andExpect(jsonPath("$.keys[0].kty").value("RSA"))
@@ -70,10 +69,13 @@ class JwtKeyControllerTest {
     void PEM_형식_Public_Key_반환을_성공한다() throws Exception {
       given(tokenProvider.getPublicKey()).willReturn(publicKey);
 
-      mockMvc.perform(get("/.well-known/public-key.pem"))
+      mockMvc
+          .perform(get("/.well-known/public-key.pem"))
           .andExpect(status().isOk())
-          .andExpect(content().string(org.hamcrest.Matchers.containsString("-----BEGIN PUBLIC KEY-----")))
-          .andExpect(content().string(org.hamcrest.Matchers.containsString("-----END PUBLIC KEY-----")));
+          .andExpect(
+              content().string(org.hamcrest.Matchers.containsString("-----BEGIN PUBLIC KEY-----")))
+          .andExpect(
+              content().string(org.hamcrest.Matchers.containsString("-----END PUBLIC KEY-----")));
     }
   }
 }

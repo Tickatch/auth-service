@@ -12,8 +12,7 @@ import org.junit.jupiter.api.io.TempDir;
 @DisplayName("RsaKeyManager 테스트")
 class RsaKeyManagerTest {
 
-  @TempDir
-  Path tempDir;
+  @TempDir Path tempDir;
 
   @Nested
   class 키_자동_생성_테스트 {

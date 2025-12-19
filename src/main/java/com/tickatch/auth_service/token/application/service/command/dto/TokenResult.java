@@ -14,15 +14,13 @@ public record TokenResult(
     String accessToken,
     String refreshToken,
     LocalDateTime accessTokenExpiresAt,
-    LocalDateTime refreshTokenExpiresAt
-) {
+    LocalDateTime refreshTokenExpiresAt) {
 
   public static TokenResult of(
       String accessToken,
       String refreshToken,
       LocalDateTime accessTokenExpiresAt,
-      LocalDateTime refreshTokenExpiresAt
-  ) {
+      LocalDateTime refreshTokenExpiresAt) {
     return new TokenResult(accessToken, refreshToken, accessTokenExpiresAt, refreshTokenExpiresAt);
   }
 }

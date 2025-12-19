@@ -39,7 +39,8 @@ public class AuthQueryService {
    * @throws AuthException 계정을 찾을 수 없는 경우
    */
   public AuthInfo findById(UUID authId) {
-    return authRepository.findById(authId)
+    return authRepository
+        .findById(authId)
         .map(AuthInfo::from)
         .orElseThrow(() -> new AuthException(AuthErrorCode.AUTH_NOT_FOUND));
   }
@@ -51,8 +52,7 @@ public class AuthQueryService {
    * @return Auth 정보
    */
   public Optional<AuthInfo> findByIdOptional(UUID authId) {
-    return authRepository.findById(authId)
-        .map(AuthInfo::from);
+    return authRepository.findById(authId).map(AuthInfo::from);
   }
 
   /**
@@ -63,8 +63,7 @@ public class AuthQueryService {
    * @return Auth 정보
    */
   public Optional<AuthInfo> findByEmailAndUserType(String email, UserType userType) {
-    return authRepository.findByEmailAndUserType(email, userType)
-        .map(AuthInfo::from);
+    return authRepository.findByEmailAndUserType(email, userType).map(AuthInfo::from);
   }
 
   /**
@@ -75,7 +74,8 @@ public class AuthQueryService {
    * @return Auth 정보
    */
   public Optional<AuthInfo> findByProviderInfo(ProviderType providerType, String providerUserId) {
-    return authRepository.findByProviderAndProviderUserId(providerType, providerUserId)
+    return authRepository
+        .findByProviderAndProviderUserId(providerType, providerUserId)
         .map(AuthInfo::from);
   }
 
@@ -98,7 +98,6 @@ public class AuthQueryService {
    * @return Auth 목록 (페이징)
    */
   public Page<AuthResponse> searchAuths(AuthSearchCondition condition, Pageable pageable) {
-    return authRepository.findAllByCondition(condition, pageable)
-        .map(AuthResponse::from);
+    return authRepository.findAllByCondition(condition, pageable).map(AuthResponse::from);
   }
 }

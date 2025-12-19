@@ -15,12 +15,13 @@ import org.springframework.web.context.request.ServletRequestAttributes;
  * <p>현재 요청의 인증 헤더와 추적 정보를 다른 서비스로 전파한다.
  *
  * <p>전파하는 헤더:
+ *
  * <ul>
- *   <li>X-User-Id: 사용자 ID</li>
- *   <li>X-Trace-Id: 커스텀 추적 ID (MdcFilter용)</li>
- *   <li>X-B3-TraceId: B3 추적 ID (Brave/Zipkin용)</li>
- *   <li>X-B3-SpanId: B3 스팬 ID (Brave/Zipkin용)</li>
- *   <li>X-B3-Sampled: 샘플링 여부 (Brave/Zipkin용)</li>
+ *   <li>X-User-Id: 사용자 ID
+ *   <li>X-Trace-Id: 커스텀 추적 ID (MdcFilter용)
+ *   <li>X-B3-TraceId: B3 추적 ID (Brave/Zipkin용)
+ *   <li>X-B3-SpanId: B3 스팬 ID (Brave/Zipkin용)
+ *   <li>X-B3-Sampled: 샘플링 여부 (Brave/Zipkin용)
  * </ul>
  *
  * @author Tickatch

@@ -23,7 +23,8 @@ class AuthExceptionTest {
     @Test
     void 에러코드와_인자로_예외를_생성한다() {
 
-      AuthException exception = new AuthException(AuthErrorCode.PROVIDER_ALREADY_CONNECTED, "KAKAO");
+      AuthException exception =
+          new AuthException(AuthErrorCode.PROVIDER_ALREADY_CONNECTED, "KAKAO");
 
       assertThat(exception.getErrorCode()).isEqualTo(AuthErrorCode.PROVIDER_ALREADY_CONNECTED);
       assertThat(exception.getErrorArgs()).containsExactly("KAKAO");

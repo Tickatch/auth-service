@@ -13,6 +13,7 @@ import org.springframework.web.client.RestTemplate;
  * <p>구글 로그인 API를 사용하여 인증을 처리한다.
  *
  * <p>구글 사용자 정보 응답 형식:
+ *
  * <pre>
  * {
  *   "id": "123456789",

@@ -8,10 +8,7 @@ import jakarta.validation.constraints.NotBlank;
  *
  * @param refreshToken Refresh Token 값
  */
-public record RefreshRequest(
-    @NotBlank(message = "Refresh Token은 필수입니다")
-    String refreshToken
-) {
+public record RefreshRequest(@NotBlank(message = "Refresh Token은 필수입니다") String refreshToken) {
 
   /**
    * Command로 변환한다.

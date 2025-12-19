@@ -42,7 +42,8 @@ public class Password {
   /* 허용된 특수문자 패턴 (안전한 문자만) */
   private static final Pattern SPECIAL_PATTERN = Pattern.compile("[!@#$%^*()_+\\-=.,?]");
   /* 허용된 전체 문자 패턴 (영문 + 숫자 + 허용 특수문자) */
-  private static final Pattern ALLOWED_PATTERN = Pattern.compile("^[a-zA-Z0-9!@#$%^*()_+\\-=.,?]+$");
+  private static final Pattern ALLOWED_PATTERN =
+      Pattern.compile("^[a-zA-Z0-9!@#$%^*()_+\\-=.,?]+$");
 
   /* 암호화된 비밀번호 */
   @Column(name = "password")

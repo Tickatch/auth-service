@@ -11,9 +11,7 @@ import com.tickatch.auth_service.auth.infrastructure.oauth.dto.OAuthUserInfo;
  */
 public interface OAuthClient {
 
-  /**
-   * 지원하는 제공자 타입을 반환한다.
-   */
+  /** 지원하는 제공자 타입을 반환한다. */
   ProviderType getProviderType();
 
   /**
@@ -32,8 +30,6 @@ public interface OAuthClient {
    */
   OAuthUserInfo getUserInfo(String code);
 
-  /**
-   * 설정이 완료되어 있는지 확인한다.
-   */
+  /** 설정이 완료되어 있는지 확인한다. */
   boolean isConfigured();
 }

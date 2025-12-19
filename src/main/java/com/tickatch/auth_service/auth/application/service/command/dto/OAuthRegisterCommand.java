@@ -21,8 +21,7 @@ public record OAuthRegisterCommand(
     ProviderType providerType,
     String providerUserId,
     String deviceInfo,
-    boolean rememberMe
-) {
+    boolean rememberMe) {
 
   public static OAuthRegisterCommand of(
       String email,
@@ -31,10 +30,8 @@ public record OAuthRegisterCommand(
       ProviderType providerType,
       String providerUserId,
       String deviceInfo,
-      boolean rememberMe
-  ) {
+      boolean rememberMe) {
     return new OAuthRegisterCommand(
-        email, password, userType, providerType, providerUserId, deviceInfo, rememberMe
-    );
+        email, password, userType, providerType, providerUserId, deviceInfo, rememberMe);
   }
 }

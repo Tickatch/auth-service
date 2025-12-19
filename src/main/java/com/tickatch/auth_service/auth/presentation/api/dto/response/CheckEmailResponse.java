@@ -5,9 +5,7 @@ package com.tickatch.auth_service.auth.presentation.api.dto.response;
  *
  * @param available 사용 가능 여부 (true: 사용 가능, false: 이미 존재)
  */
-public record CheckEmailResponse(
-    boolean available
-) {
+public record CheckEmailResponse(boolean available) {
 
   public static CheckEmailResponse of(boolean exists) {
     return new CheckEmailResponse(!exists);
