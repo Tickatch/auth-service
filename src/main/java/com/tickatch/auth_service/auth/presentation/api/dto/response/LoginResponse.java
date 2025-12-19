@@ -23,8 +23,7 @@ public record LoginResponse(
     String accessToken,
     String refreshToken,
     LocalDateTime accessTokenExpiresAt,
-    LocalDateTime refreshTokenExpiresAt
-) {
+    LocalDateTime refreshTokenExpiresAt) {
 
   /**
    * LoginResult에서 변환한다.
@@ -40,7 +39,6 @@ public record LoginResponse(
         result.accessToken(),
         result.refreshToken(),
         result.accessTokenExpiresAt(),
-        result.refreshTokenExpiresAt()
-    );
+        result.refreshTokenExpiresAt());
   }
 }

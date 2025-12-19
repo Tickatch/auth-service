@@ -12,9 +12,4 @@ import jakarta.validation.constraints.NotNull;
  * @param rememberMe 로그인 유지 여부
  */
 public record OAuthLoginRequest(
-    @NotNull(message = "사용자 유형은 필수입니다")
-    UserType userType,
-
-    boolean rememberMe
-) {
-}
+    @NotNull(message = "사용자 유형은 필수입니다") UserType userType, boolean rememberMe) {}

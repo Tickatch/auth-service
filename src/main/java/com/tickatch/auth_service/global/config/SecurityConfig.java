@@ -48,8 +48,8 @@ public class SecurityConfig extends BaseSecurityConfig {
 
   @Override
   protected Customizer<
-      AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry>
-  authorizeHttpRequests() {
+          AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry>
+      authorizeHttpRequests() {
     return registry ->
         registry
             // 기본 허용 경로 (Swagger, Actuator)

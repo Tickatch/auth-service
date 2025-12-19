@@ -15,18 +15,10 @@ import jakarta.validation.constraints.NotNull;
  * @param rememberMe 로그인 유지 여부
  */
 public record LoginRequest(
-    @NotBlank(message = "이메일은 필수입니다")
-    @Email(message = "올바른 이메일 형식이 아닙니다")
-    String email,
-
-    @NotBlank(message = "비밀번호는 필수입니다")
-    String password,
-
-    @NotNull(message = "사용자 유형은 필수입니다")
-    UserType userType,
-
-    boolean rememberMe
-) {
+    @NotBlank(message = "이메일은 필수입니다") @Email(message = "올바른 이메일 형식이 아닙니다") String email,
+    @NotBlank(message = "비밀번호는 필수입니다") String password,
+    @NotNull(message = "사용자 유형은 필수입니다") UserType userType,
+    boolean rememberMe) {
 
   /**
    * Command로 변환한다.

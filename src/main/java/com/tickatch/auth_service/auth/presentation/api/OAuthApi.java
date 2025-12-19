@@ -60,21 +60,17 @@ public class OAuthApi {
   @Operation(summary = "OAuth 로그인", description = "소셜 로그인 페이지로 리다이렉트합니다. (CUSTOMER 전용)")
   @GetMapping("/{provider}")
   public void redirectToOAuth(
-      @Parameter(description = "소셜 로그인 제공자", example = "kakao")
-      @PathVariable String provider,
-
-      @Parameter(description = "로그인 유지 여부")
-      @RequestParam(defaultValue = "false") boolean rememberMe,
-
-      @Parameter(hidden = true)
-      @RequestHeader(value = "User-Agent", defaultValue = "Unknown") String userAgent,
-
-      HttpServletResponse response
-  ) throws IOException {
+      @Parameter(description = "소셜 로그인 제공자", example = "kakao") @PathVariable String provider,
+      @Parameter(description = "로그인 유지 여부") @RequestParam(defaultValue = "false")
+          boolean rememberMe,
+      @Parameter(hidden = true) @RequestHeader(value = "User-Agent", defaultValue = "Unknown")
+          String userAgent,
+      HttpServletResponse response)
+      throws IOException {
     ProviderType providerType = parseProviderType(provider);
 
-    String authorizationUrl = oAuthCommandService.getAuthorizationUrl(
-        providerType, rememberMe, userAgent);
+    String authorizationUrl =
+        oAuthCommandService.getAuthorizationUrl(providerType, rememberMe, userAgent);
 
     log.info("OAuth 로그인 리다이렉트 - provider: {}", provider);
     response.sendRedirect(authorizationUrl);
@@ -84,6 +80,7 @@ public class OAuthApi {
    * OAuth 콜백 처리.
    *
    * <p>소셜 로그인 제공자에서 인증 후 리다이렉트되는 콜백을 처리한다.
+   *
    * <p>인증 결과를 프론트엔드 콜백 페이지로 리다이렉트하여 전달한다.
    *
    * @param provider 소셜 로그인 제공자
@@ -95,20 +92,12 @@ public class OAuthApi {
   @Operation(summary = "OAuth 콜백", description = "소셜 로그인 콜백을 처리합니다.")
   @GetMapping("/{provider}/callback")
   public void handleOAuthCallback(
-      @Parameter(description = "소셜 로그인 제공자", example = "kakao")
-      @PathVariable String provider,
-
-      @Parameter(description = "인가 코드")
-      @RequestParam(required = false) String code,
-
-      @Parameter(description = "상태 값")
-      @RequestParam(required = false) String state,
-
-      @Parameter(description = "에러 코드 (로그인 취소 시)")
-      @RequestParam(required = false) String error,
-
-      HttpServletResponse response
-  ) throws IOException {
+      @Parameter(description = "소셜 로그인 제공자", example = "kakao") @PathVariable String provider,
+      @Parameter(description = "인가 코드") @RequestParam(required = false) String code,
+      @Parameter(description = "상태 값") @RequestParam(required = false) String state,
+      @Parameter(description = "에러 코드 (로그인 취소 시)") @RequestParam(required = false) String error,
+      HttpServletResponse response)
+      throws IOException {
 
     // 프론트엔드 콜백 URL (환경변수로 관리 권장)
     String frontendCallbackUrl = "http://localhost:3000/oauth/callback";
@@ -165,17 +154,12 @@ public class OAuthApi {
   @Operation(summary = "소셜 계정 연동", description = "기존 계정에 소셜 로그인을 연동합니다.")
   @GetMapping("/{provider}/link")
   public void linkSocialAccount(
-      @Parameter(description = "소셜 로그인 제공자", example = "kakao")
-      @PathVariable String provider,
-
-      @Parameter(description = "인증된 사용자 ID (Gateway에서 주입)")
-      @RequestHeader("X-User-Id") UUID authId,
-
-      @Parameter(hidden = true)
-      @RequestHeader(value = "User-Agent", defaultValue = "Unknown") String userAgent,
-
-      HttpServletResponse response
-  ) throws IOException {
+      @Parameter(description = "소셜 로그인 제공자", example = "kakao") @PathVariable String provider,
+      @Parameter(description = "인증된 사용자 ID (Gateway에서 주입)") @RequestHeader("X-User-Id") UUID authId,
+      @Parameter(hidden = true) @RequestHeader(value = "User-Agent", defaultValue = "Unknown")
+          String userAgent,
+      HttpServletResponse response)
+      throws IOException {
     ProviderType providerType = parseProviderType(provider);
 
     String linkUrl = oAuthCommandService.getLinkUrl(providerType, authId, userAgent);
@@ -184,18 +168,13 @@ public class OAuthApi {
     response.sendRedirect(linkUrl);
   }
 
-  /**
-   * 소셜 계정 연동 해제.
-   */
+  /** 소셜 계정 연동 해제. */
   @Operation(summary = "소셜 계정 연동 해제", description = "연동된 소셜 계정을 해제합니다.")
   @DeleteMapping("/{provider}/unlink")
   public ResponseEntity<ApiResponse<Void>> unlinkSocialAccount(
-      @Parameter(description = "소셜 로그인 제공자", example = "kakao")
-      @PathVariable String provider,
-
-      @Parameter(description = "인증된 사용자 ID (Gateway에서 주입)")
-      @RequestHeader("X-User-Id") UUID authId
-  ) {
+      @Parameter(description = "소셜 로그인 제공자", example = "kakao") @PathVariable String provider,
+      @Parameter(description = "인증된 사용자 ID (Gateway에서 주입)") @RequestHeader("X-User-Id")
+          UUID authId) {
     ProviderType providerType = parseProviderType(provider);
 
     oAuthCommandService.unlinkProvider(authId, providerType);
@@ -204,9 +183,7 @@ public class OAuthApi {
     return ResponseEntity.ok(ApiResponse.successWithMessage("소셜 계정 연동이 해제되었습니다."));
   }
 
-  /**
-   * 제공자 타입 파싱.
-   */
+  /** 제공자 타입 파싱. */
   private ProviderType parseProviderType(String provider) {
     try {
       return ProviderType.valueOf(provider.toUpperCase());

@@ -26,8 +26,11 @@ public record AuthInfoResponse(
     AuthStatus status,
     LocalDateTime lastLoginAt,
     List<ProviderType> providers,
-    LocalDateTime createdAt
-) {
+    LocalDateTime createdAt) {
+
+  public AuthInfoResponse {
+    providers = providers == null ? List.of() : List.copyOf(providers);
+  }
 
   /**
    * AuthInfo에서 변환한다.
@@ -43,7 +46,6 @@ public record AuthInfoResponse(
         info.status(),
         info.lastLoginAt(),
         info.providers(),
-        info.createdAt()
-    );
+        info.createdAt());
   }
 }

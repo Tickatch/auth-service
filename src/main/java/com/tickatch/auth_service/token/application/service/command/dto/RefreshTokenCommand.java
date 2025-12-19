@@ -5,9 +5,7 @@ package com.tickatch.auth_service.token.application.service.command.dto;
  *
  * @param refreshToken Refresh Token 값
  */
-public record RefreshTokenCommand(
-    String refreshToken
-) {
+public record RefreshTokenCommand(String refreshToken) {
 
   public static RefreshTokenCommand of(String refreshToken) {
     return new RefreshTokenCommand(refreshToken);

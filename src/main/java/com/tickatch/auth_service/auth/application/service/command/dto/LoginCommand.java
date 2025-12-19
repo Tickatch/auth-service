@@ -12,20 +12,10 @@ import com.tickatch.auth_service.auth.domain.vo.UserType;
  * @param rememberMe 로그인 유지 여부
  */
 public record LoginCommand(
-    String email,
-    String password,
-    UserType userType,
-    String deviceInfo,
-    boolean rememberMe
-) {
+    String email, String password, UserType userType, String deviceInfo, boolean rememberMe) {
 
   public static LoginCommand of(
-      String email,
-      String password,
-      UserType userType,
-      String deviceInfo,
-      boolean rememberMe
-  ) {
+      String email, String password, UserType userType, String deviceInfo, boolean rememberMe) {
     return new LoginCommand(email, password, userType, deviceInfo, rememberMe);
   }
 }

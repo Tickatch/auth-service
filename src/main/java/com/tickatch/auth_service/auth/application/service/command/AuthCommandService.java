@@ -1,5 +1,6 @@
 package com.tickatch.auth_service.auth.application.service.command;
 
+import com.tickatch.auth_service.auth.application.messaging.AuthLogEventPublisher;
 import com.tickatch.auth_service.auth.application.port.out.TokenPort;
 import com.tickatch.auth_service.auth.application.service.command.dto.ChangePasswordCommand;
 import com.tickatch.auth_service.auth.application.service.command.dto.LoginCommand;
@@ -25,10 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 /**
  * 인증 관련 Command 서비스.
  *
- * <p>회원가입, 로그인, 로그아웃, 비밀번호 변경 등 인증 관련 커맨드를 처리한다.
- *
- * <p>탈퇴는 User Service를 통해서만 처리되며, 이 서비스는 User Service에서 발행한
- * 이벤트를 수신하여 Auth 상태를 동기화한다.
+ * <p>회원가입, 로그인, 로그아웃, 비밀번호 변경 등 인증 관련 커맨드를 처리한다. 모든 주요 작업에 대해 성공/실패 로그를 로그 서비스로 발행한다.
  *
  * @author Tickatch
  * @since 1.0.0
@@ -42,6 +40,7 @@ public class AuthCommandService {
   private final AuthRepository authRepository;
   private final TokenPort tokenPort;
   private final PasswordEncoder passwordEncoder;
+  private final AuthLogEventPublisher logEventPublisher;
 
   // ========================================
   // 회원가입
@@ -50,67 +49,83 @@ public class AuthCommandService {
   /**
    * 회원가입을 처리한다.
    *
+   * <p>성공 시 REGISTERED 로그를, 실패 시 REGISTER_FAILED 로그를 발행한다.
+   *
    * @param command 회원가입 요청
    * @return 로그인 결과 (토큰 포함)
    * @throws AuthException 이메일 중복 시
    */
   public LoginResult register(RegisterCommand command) {
-    validateEmailNotDuplicate(command.email(), command.userType());
+    String userType = command.userType().name();
+    try {
+      validateEmailNotDuplicate(command.email(), command.userType());
 
-    Auth auth = Auth.register(
-        command.email(),
-        command.password(),
-        command.userType(),
-        passwordEncoder,
-        "SYSTEM"
-    );
+      Auth auth =
+          Auth.register(
+              command.email(), command.password(), command.userType(), passwordEncoder, "SYSTEM");
 
-    authRepository.save(auth);
-    log.info("회원가입 완료 - authId: {}, email: {}, userType: {}",
-        auth.getId(), auth.getEmail(), auth.getUserType());
+      authRepository.save(auth);
+      log.info(
+          "회원가입 완료 - authId: {}, email: {}, userType: {}",
+          auth.getId(),
+          auth.getEmail(),
+          auth.getUserType());
 
-    TokenResult tokenResult = tokenPort.issueTokens(
-        auth.getId(),
-        auth.getUserType(),
-        command.deviceInfo(),
-        command.rememberMe()
-    );
+      TokenResult tokenResult =
+          tokenPort.issueTokens(
+              auth.getId(), auth.getUserType(), command.deviceInfo(), command.rememberMe());
 
-    return LoginResult.of(auth.getId(), auth.getEmail(), auth.getUserType(), tokenResult);
+      logEventPublisher.publishRegistered(auth.getId(), userType);
+      return LoginResult.of(auth.getId(), auth.getEmail(), auth.getUserType(), tokenResult);
+    } catch (Exception e) {
+      logEventPublisher.publishRegisterFailed(userType);
+      log.error("회원가입 실패. email: {}, error: {}", command.email(), e.getMessage(), e);
+      throw e;
+    }
   }
 
   /**
    * 소셜 로그인으로 회원가입을 처리한다.
+   *
+   * <p>성공 시 OAUTH_REGISTERED 로그를, 실패 시 OAUTH_REGISTER_FAILED 로그를 발행한다.
    *
    * @param command 소셜 회원가입 요청
    * @return 로그인 결과 (토큰 포함)
    * @throws AuthException 이메일 중복 또는 CUSTOMER가 아닌 경우
    */
   public LoginResult registerWithOAuth(OAuthRegisterCommand command) {
-    validateEmailNotDuplicate(command.email(), command.userType());
+    String userType = command.userType().name();
+    try {
+      validateEmailNotDuplicate(command.email(), command.userType());
 
-    Auth auth = Auth.registerWithOAuth(
-        command.email(),
-        command.password(),
-        command.userType(),
-        command.providerType(),
-        command.providerUserId(),
-        passwordEncoder,
-        "SYSTEM"
-    );
+      Auth auth =
+          Auth.registerWithOAuth(
+              command.email(),
+              command.password(),
+              command.userType(),
+              command.providerType(),
+              command.providerUserId(),
+              passwordEncoder,
+              "SYSTEM");
 
-    authRepository.save(auth);
-    log.info("소셜 회원가입 완료 - authId: {}, email: {}, provider: {}",
-        auth.getId(), auth.getEmail(), command.providerType());
+      authRepository.save(auth);
+      log.info(
+          "소셜 회원가입 완료 - authId: {}, email: {}, provider: {}",
+          auth.getId(),
+          auth.getEmail(),
+          command.providerType());
 
-    TokenResult tokenResult = tokenPort.issueTokens(
-        auth.getId(),
-        auth.getUserType(),
-        command.deviceInfo(),
-        command.rememberMe()
-    );
+      TokenResult tokenResult =
+          tokenPort.issueTokens(
+              auth.getId(), auth.getUserType(), command.deviceInfo(), command.rememberMe());
 
-    return LoginResult.of(auth.getId(), auth.getEmail(), auth.getUserType(), tokenResult);
+      logEventPublisher.publishOAuthRegistered(auth.getId(), userType);
+      return LoginResult.of(auth.getId(), auth.getEmail(), auth.getUserType(), tokenResult);
+    } catch (Exception e) {
+      logEventPublisher.publishOAuthRegisterFailed(userType);
+      log.error("소셜 회원가입 실패. email: {}, error: {}", command.email(), e.getMessage(), e);
+      throw e;
+    }
   }
 
   // ========================================
@@ -120,90 +135,138 @@ public class AuthCommandService {
   /**
    * 로그인을 처리한다.
    *
+   * <p>성공 시 LOGIN 로그를, 실패 시 LOGIN_FAILED 로그를 발행한다.
+   *
    * @param command 로그인 요청
    * @return 로그인 결과 (토큰 포함)
    * @throws AuthException 인증 실패 시
    */
   public LoginResult login(LoginCommand command) {
-    Auth auth = authRepository.findByEmailAndUserType(command.email(), command.userType())
-        .orElseThrow(() -> new AuthException(AuthErrorCode.INVALID_CREDENTIALS));
+    String userType = command.userType().name();
+    try {
+      Auth auth =
+          authRepository
+              .findByEmailAndUserType(command.email(), command.userType())
+              .orElseThrow(() -> new AuthException(AuthErrorCode.INVALID_CREDENTIALS));
 
-    if (!auth.matchesPassword(command.password(), passwordEncoder)) {
-      auth.recordLoginFailure();
-      log.warn("로그인 실패 - email: {}, failCount: {}", command.email(), auth.getLoginFailCount());
-      throw new AuthException(AuthErrorCode.INVALID_CREDENTIALS);
+      if (!auth.matchesPassword(command.password(), passwordEncoder)) {
+        auth.recordLoginFailure();
+        log.warn("로그인 실패 - email: {}, failCount: {}", command.email(), auth.getLoginFailCount());
+        throw new AuthException(AuthErrorCode.INVALID_CREDENTIALS);
+      }
+
+      auth.recordLoginSuccess();
+      log.info("로그인 성공 - authId: {}, email: {}", auth.getId(), auth.getEmail());
+
+      TokenResult tokenResult =
+          tokenPort.issueTokens(
+              auth.getId(), auth.getUserType(), command.deviceInfo(), command.rememberMe());
+
+      logEventPublisher.publishLogin(auth.getId(), userType);
+      return LoginResult.of(auth.getId(), auth.getEmail(), auth.getUserType(), tokenResult);
+    } catch (Exception e) {
+      logEventPublisher.publishLoginFailed(userType);
+      log.error("로그인 실패. email: {}, error: {}", command.email(), e.getMessage(), e);
+      throw e;
     }
-
-    auth.recordLoginSuccess();
-    log.info("로그인 성공 - authId: {}, email: {}", auth.getId(), auth.getEmail());
-
-    TokenResult tokenResult = tokenPort.issueTokens(
-        auth.getId(),
-        auth.getUserType(),
-        command.deviceInfo(),
-        command.rememberMe()
-    );
-
-    return LoginResult.of(auth.getId(), auth.getEmail(), auth.getUserType(), tokenResult);
   }
 
   /**
    * 소셜 로그인을 처리한다.
+   *
+   * <p>성공 시 OAUTH_LOGIN 로그를, 실패 시 OAUTH_LOGIN_FAILED 로그를 발행한다.
    *
    * @param command 소셜 로그인 요청
    * @return 로그인 결과 (토큰 포함)
    * @throws AuthException 계정을 찾을 수 없는 경우
    */
   public LoginResult loginWithOAuth(OAuthLoginCommand command) {
-    Auth auth = authRepository.findByProviderAndProviderUserId(command.providerType(), command.providerUserId())
-        .orElseThrow(() -> new AuthException(AuthErrorCode.SOCIAL_ACCOUNT_NOT_FOUND));
+    String userType = command.userType().name();
+    try {
+      Auth auth =
+          authRepository
+              .findByProviderAndProviderUserId(command.providerType(), command.providerUserId())
+              .orElseThrow(() -> new AuthException(AuthErrorCode.SOCIAL_ACCOUNT_NOT_FOUND));
 
-    if (auth.getUserType() != command.userType()) {
-      throw new AuthException(AuthErrorCode.USER_TYPE_MISMATCH);
+      if (auth.getUserType() != command.userType()) {
+        throw new AuthException(AuthErrorCode.USER_TYPE_MISMATCH);
+      }
+
+      auth.recordLoginSuccess();
+      log.info("소셜 로그인 성공 - authId: {}, provider: {}", auth.getId(), command.providerType());
+
+      TokenResult tokenResult =
+          tokenPort.issueTokens(
+              auth.getId(), auth.getUserType(), command.deviceInfo(), command.rememberMe());
+
+      logEventPublisher.publishOAuthLogin(auth.getId(), userType);
+      return LoginResult.of(auth.getId(), auth.getEmail(), auth.getUserType(), tokenResult);
+    } catch (Exception e) {
+      logEventPublisher.publishOAuthLoginFailed(userType);
+      log.error("소셜 로그인 실패. provider: {}, error: {}", command.providerType(), e.getMessage(), e);
+      throw e;
     }
-
-    auth.recordLoginSuccess();
-    log.info("소셜 로그인 성공 - authId: {}, provider: {}", auth.getId(), command.providerType());
-
-    TokenResult tokenResult = tokenPort.issueTokens(
-        auth.getId(),
-        auth.getUserType(),
-        command.deviceInfo(),
-        command.rememberMe()
-    );
-
-    return LoginResult.of(auth.getId(), auth.getEmail(), auth.getUserType(), tokenResult);
   }
 
   /**
    * 토큰을 갱신한다.
    *
+   * <p>성공 시 TOKEN_REFRESHED 로그를, 실패 시 TOKEN_REFRESH_FAILED 로그를 발행한다.
+   *
    * @param command 토큰 갱신 요청
    * @return 갱신된 토큰 정보
    */
   public LoginResult refresh(RefreshCommand command) {
-    UUID authId = tokenPort.getAuthIdFromRefreshToken(command.refreshToken());
+    UUID authId = null;
+    String userType = "UNKNOWN";
+    try {
+      authId = tokenPort.getAuthIdFromRefreshToken(command.refreshToken());
 
-    Auth auth = authRepository.findById(authId)
-        .orElseThrow(() -> new AuthException(AuthErrorCode.AUTH_NOT_FOUND));
+      Auth auth =
+          authRepository
+              .findById(authId)
+              .orElseThrow(() -> new AuthException(AuthErrorCode.AUTH_NOT_FOUND));
 
-    TokenResult tokenResult = tokenPort.refreshTokens(command.refreshToken(), auth.getUserType());
+      userType = auth.getUserType().name();
+      TokenResult tokenResult = tokenPort.refreshTokens(command.refreshToken(), auth.getUserType());
 
-    return LoginResult.of(auth.getId(), auth.getEmail(), auth.getUserType(), tokenResult);
+      logEventPublisher.publishTokenRefreshed(authId, userType);
+      return LoginResult.of(auth.getId(), auth.getEmail(), auth.getUserType(), tokenResult);
+    } catch (Exception e) {
+      logEventPublisher.publishTokenRefreshFailed(authId, userType);
+      log.error("토큰 갱신 실패. authId: {}, error: {}", authId, e.getMessage(), e);
+      throw e;
+    }
   }
 
   /**
    * 로그아웃을 처리한다.
    *
+   * <p>성공 시 LOGOUT 로그를, 실패 시 LOGOUT_FAILED 로그를 발행한다.
+   *
    * @param command 로그아웃 요청
    */
   public void logout(LogoutCommand command) {
-    if (command.allDevices()) {
-      tokenPort.revokeAllTokens(command.authId());
-      log.info("전체 로그아웃 완료 - authId: {}", command.authId());
-    } else {
-      tokenPort.revokeToken(command.refreshToken());
-      log.info("로그아웃 완료 - authId: {}", command.authId());
+    String userType = "UNKNOWN";
+    try {
+      Auth auth = authRepository.findById(command.authId()).orElse(null);
+      if (auth != null) {
+        userType = auth.getUserType().name();
+      }
+
+      if (command.allDevices()) {
+        tokenPort.revokeAllTokens(command.authId());
+        log.info("전체 로그아웃 완료 - authId: {}", command.authId());
+      } else {
+        tokenPort.revokeToken(command.refreshToken());
+        log.info("로그아웃 완료 - authId: {}", command.authId());
+      }
+
+      logEventPublisher.publishLogout(command.authId(), userType);
+    } catch (Exception e) {
+      logEventPublisher.publishLogoutFailed(command.authId(), userType);
+      log.error("로그아웃 실패. authId: {}, error: {}", command.authId(), e.getMessage(), e);
+      throw e;
     }
   }
 
@@ -214,48 +277,75 @@ public class AuthCommandService {
   /**
    * 비밀번호를 변경한다.
    *
+   * <p>성공 시 PASSWORD_CHANGED 로그를, 실패 시 PASSWORD_CHANGE_FAILED 로그를 발행한다.
+   *
    * @param command 비밀번호 변경 요청
    * @throws AuthException 현재 비밀번호가 일치하지 않는 경우
    */
   public void changePassword(ChangePasswordCommand command) {
-    Auth auth = authRepository.findById(command.authId())
-        .orElseThrow(() -> new AuthException(AuthErrorCode.AUTH_NOT_FOUND));
+    String userType = "UNKNOWN";
+    try {
+      Auth auth =
+          authRepository
+              .findById(command.authId())
+              .orElseThrow(() -> new AuthException(AuthErrorCode.AUTH_NOT_FOUND));
 
-    if (!auth.matchesPassword(command.currentPassword(), passwordEncoder)) {
-      throw new AuthException(AuthErrorCode.INVALID_CURRENT_PASSWORD);
+      userType = auth.getUserType().name();
+
+      if (!auth.matchesPassword(command.currentPassword(), passwordEncoder)) {
+        throw new AuthException(AuthErrorCode.INVALID_CURRENT_PASSWORD);
+      }
+
+      auth.changePassword(command.newPassword(), passwordEncoder, auth.getId().toString());
+      log.info("비밀번호 변경 완료 - authId: {}", command.authId());
+
+      tokenPort.revokeAllTokens(command.authId());
+
+      logEventPublisher.publishPasswordChanged(command.authId(), userType);
+    } catch (Exception e) {
+      logEventPublisher.publishPasswordChangeFailed(command.authId(), userType);
+      log.error("비밀번호 변경 실패. authId: {}, error: {}", command.authId(), e.getMessage(), e);
+      throw e;
     }
-
-    auth.changePassword(command.newPassword(), passwordEncoder, auth.getId().toString());
-    log.info("비밀번호 변경 완료 - authId: {}", command.authId());
-
-    tokenPort.revokeAllTokens(command.authId());
   }
 
   // ========================================
-  // 탈퇴 (추후 확장용으로 유지)
+  // 탈퇴
   // ========================================
 
   /**
    * 회원탈퇴를 처리한다.
    *
-   * <p>참고: 일반적인 탈퇴는 User Service를 통해 진행하며, 이 메서드는
-   * 직접 Auth만 탈퇴 처리가 필요한 경우를 위해 유지한다.
+   * <p>성공 시 WITHDRAWN 로그를, 실패 시 WITHDRAW_FAILED 로그를 발행한다.
    *
    * @param command 회원탈퇴 요청
    * @throws AuthException 비밀번호가 일치하지 않는 경우
    */
   public void withdraw(WithdrawCommand command) {
-    Auth auth = authRepository.findById(command.authId())
-        .orElseThrow(() -> new AuthException(AuthErrorCode.AUTH_NOT_FOUND));
+    String userType = "UNKNOWN";
+    try {
+      Auth auth =
+          authRepository
+              .findById(command.authId())
+              .orElseThrow(() -> new AuthException(AuthErrorCode.AUTH_NOT_FOUND));
 
-    if (!auth.matchesPassword(command.password(), passwordEncoder)) {
-      throw new AuthException(AuthErrorCode.INVALID_CREDENTIALS);
+      userType = auth.getUserType().name();
+
+      if (!auth.matchesPassword(command.password(), passwordEncoder)) {
+        throw new AuthException(AuthErrorCode.INVALID_CREDENTIALS);
+      }
+
+      auth.withdraw(auth.getId().toString());
+      log.info("회원탈퇴 완료 - authId: {}", command.authId());
+
+      tokenPort.deleteAllTokens(command.authId());
+
+      logEventPublisher.publishWithdrawn(command.authId(), userType);
+    } catch (Exception e) {
+      logEventPublisher.publishWithdrawFailed(command.authId(), userType);
+      log.error("회원탈퇴 실패. authId: {}, error: {}", command.authId(), e.getMessage(), e);
+      throw e;
     }
-
-    auth.withdraw(auth.getId().toString());
-    log.info("회원탈퇴 완료 - authId: {}", command.authId());
-
-    tokenPort.deleteAllTokens(command.authId());
   }
 
   // ========================================
@@ -265,71 +355,71 @@ public class AuthCommandService {
   /**
    * 사용자 탈퇴 이벤트를 처리한다.
    *
-   * <p>User Service에서 발행한 탈퇴 이벤트를 수신하여 Auth 상태를 WITHDRAWN으로 변경하고
-   * 모든 토큰을 삭제한다.
-   *
-   * <p>Auth 계정을 찾을 수 없는 경우 경고 로그만 남기고 정상 종료한다.
+   * <p>처리 완료 시 USER_WITHDRAWN_SYNCED 로그를 발행한다.
    *
    * @param authId 탈퇴할 Auth ID
    */
   public void handleUserWithdrawn(UUID authId) {
-    authRepository.findById(authId).ifPresentOrElse(
-        auth -> {
-          auth.withdraw(authId.toString());
-          tokenPort.deleteAllTokens(authId);
-          log.info("탈퇴 이벤트 처리 완료 - authId: {}", authId);
-        },
-        () -> log.warn("탈퇴 이벤트 처리 실패: Auth를 찾을 수 없음 - authId: {}", authId)
-    );
+    authRepository
+        .findById(authId)
+        .ifPresentOrElse(
+            auth -> {
+              String userType = auth.getUserType().name();
+              auth.withdraw(authId.toString());
+              tokenPort.deleteAllTokens(authId);
+              log.info("탈퇴 이벤트 처리 완료 - authId: {}", authId);
+              logEventPublisher.publishUserWithdrawnSynced(authId, userType);
+            },
+            () -> log.warn("탈퇴 이벤트 처리 실패: Auth를 찾을 수 없음 - authId: {}", authId));
   }
 
   /**
    * 사용자 정지 이벤트를 처리한다.
    *
-   * <p>User Service에서 발행한 정지 이벤트를 수신하여 Auth 상태를 LOCKED로 변경하고
-   * 모든 토큰을 무효화한다. 이후 해당 사용자는 로그인이 불가능해진다.
-   *
-   * <p>Auth 계정을 찾을 수 없는 경우 경고 로그만 남기고 정상 종료한다.
+   * <p>처리 완료 시 USER_SUSPENDED_SYNCED 로그를 발행한다.
    *
    * @param authId 정지할 Auth ID
    */
   public void handleUserSuspended(UUID authId) {
-    authRepository.findById(authId).ifPresentOrElse(
-        auth -> {
-          auth.lock();
-          tokenPort.revokeAllTokens(authId);
-          log.info("정지 이벤트 처리 완료 - authId: {}", authId);
-        },
-        () -> log.warn("정지 이벤트 처리 실패: Auth를 찾을 수 없음 - authId: {}", authId)
-    );
+    authRepository
+        .findById(authId)
+        .ifPresentOrElse(
+            auth -> {
+              String userType = auth.getUserType().name();
+              auth.lock();
+              tokenPort.revokeAllTokens(authId);
+              log.info("정지 이벤트 처리 완료 - authId: {}", authId);
+              logEventPublisher.publishUserSuspendedSynced(authId, userType);
+            },
+            () -> log.warn("정지 이벤트 처리 실패: Auth를 찾을 수 없음 - authId: {}", authId));
   }
 
   /**
    * 사용자 활성화 이벤트를 처리한다.
    *
-   * <p>User Service에서 발행한 활성화 이벤트를 수신하여 Auth 상태를 ACTIVE로 변경한다.
-   * 이후 해당 사용자는 다시 로그인이 가능해진다.
-   *
-   * <p>Auth 계정을 찾을 수 없는 경우 경고 로그만 남기고 정상 종료한다.
+   * <p>처리 완료 시 USER_ACTIVATED_SYNCED 로그를 발행한다.
    *
    * @param authId 활성화할 Auth ID
    */
   public void handleUserActivated(UUID authId) {
-    authRepository.findById(authId).ifPresentOrElse(
-        auth -> {
-          auth.unlock();
-          log.info("활성화 이벤트 처리 완료 - authId: {}", authId);
-        },
-        () -> log.warn("활성화 이벤트 처리 실패: Auth를 찾을 수 없음 - authId: {}", authId)
-    );
+    authRepository
+        .findById(authId)
+        .ifPresentOrElse(
+            auth -> {
+              String userType = auth.getUserType().name();
+              auth.unlock();
+              log.info("활성화 이벤트 처리 완료 - authId: {}", authId);
+              logEventPublisher.publishUserActivatedSynced(authId, userType);
+            },
+            () -> log.warn("활성화 이벤트 처리 실패: Auth를 찾을 수 없음 - authId: {}", authId));
   }
 
   // ========================================
   // 내부 메서드
   // ========================================
 
-  private void validateEmailNotDuplicate(String email,
-      com.tickatch.auth_service.auth.domain.vo.UserType userType) {
+  private void validateEmailNotDuplicate(
+      String email, com.tickatch.auth_service.auth.domain.vo.UserType userType) {
     if (authRepository.existsByEmailAndUserType(email, userType)) {
       throw new AuthException(AuthErrorCode.EMAIL_ALREADY_EXISTS);
     }

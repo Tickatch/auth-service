@@ -24,8 +24,7 @@ public record TokenInfo(
     LocalDateTime expiresAt,
     boolean revoked,
     boolean rememberMe,
-    boolean usable
-) {
+    boolean usable) {
 
   public static TokenInfo from(RefreshToken token) {
     return new TokenInfo(
@@ -36,7 +35,6 @@ public record TokenInfo(
         token.getExpiresAt(),
         token.isRevoked(),
         token.isRememberMe(),
-        token.isUsable()
-    );
+        token.isUsable());
   }
 }

@@ -9,10 +9,7 @@ import java.util.UUID;
  *
  * @param password 비밀번호 (본인 확인용)
  */
-public record WithdrawRequest(
-    @NotBlank(message = "비밀번호는 필수입니다")
-    String password
-) {
+public record WithdrawRequest(@NotBlank(message = "비밀번호는 필수입니다") String password) {
 
   /**
    * Command로 변환한다.

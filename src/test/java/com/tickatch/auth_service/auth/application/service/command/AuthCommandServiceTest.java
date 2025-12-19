@@ -5,10 +5,10 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 
+import com.tickatch.auth_service.auth.application.messaging.AuthLogEventPublisher;
 import com.tickatch.auth_service.auth.application.port.out.TokenPort;
 import com.tickatch.auth_service.auth.application.service.command.dto.ChangePasswordCommand;
 import com.tickatch.auth_service.auth.application.service.command.dto.LoginCommand;
@@ -35,26 +35,27 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 @DisplayName("AuthCommandService 테스트")
 @ExtendWith(MockitoExtension.class)
 class AuthCommandServiceTest {
 
-  @InjectMocks
-  private AuthCommandService authCommandService;
+  @InjectMocks private AuthCommandService authCommandService;
 
-  @Mock
-  private AuthRepository authRepository;
+  @Mock private AuthRepository authRepository;
 
-  @Mock
-  private TokenPort tokenPort;
+  @Mock private TokenPort tokenPort;
 
   private PasswordEncoder passwordEncoder;
+
+  @MockitoBean private AuthLogEventPublisher logEventPublisher;
 
   @BeforeEach
   void setUp() {
     passwordEncoder = new BCryptPasswordEncoder();
-    authCommandService = new AuthCommandService(authRepository, tokenPort, passwordEncoder);
+    authCommandService =
+        new AuthCommandService(authRepository, tokenPort, passwordEncoder, logEventPublisher);
   }
 
   private TokenResult createTokenResult() {
@@ -62,8 +63,7 @@ class AuthCommandServiceTest {
         "access-token",
         "refresh-token",
         LocalDateTime.now().plusMinutes(5),
-        LocalDateTime.now().plusDays(7)
-    );
+        LocalDateTime.now().plusDays(7));
   }
 
   @Nested
@@ -71,8 +71,8 @@ class AuthCommandServiceTest {
 
     @Test
     void 회원가입을_성공한다() {
-      RegisterCommand command = RegisterCommand.of(
-          "test@test.com", "Password123!", UserType.CUSTOMER, "device", false);
+      RegisterCommand command =
+          RegisterCommand.of("test@test.com", "Password123!", UserType.CUSTOMER, "device", false);
 
       given(authRepository.existsByEmailAndUserType(anyString(), any())).willReturn(false);
       given(authRepository.save(any(Auth.class))).willAnswer(inv -> inv.getArgument(0));
@@ -90,8 +90,8 @@ class AuthCommandServiceTest {
 
     @Test
     void 이메일이_중복되면_실패한다() {
-      RegisterCommand command = RegisterCommand.of(
-          "test@test.com", "Password123!", UserType.CUSTOMER, "device", false);
+      RegisterCommand command =
+          RegisterCommand.of("test@test.com", "Password123!", UserType.CUSTOMER, "device", false);
 
       given(authRepository.existsByEmailAndUserType(anyString(), any())).willReturn(true);
 
@@ -107,11 +107,11 @@ class AuthCommandServiceTest {
     @Test
     void 로그인을_성공한다() {
       String rawPassword = "Password123!";
-      Auth auth = Auth.register("test@test.com", rawPassword, UserType.CUSTOMER,
-          passwordEncoder, "SYSTEM");
+      Auth auth =
+          Auth.register("test@test.com", rawPassword, UserType.CUSTOMER, passwordEncoder, "SYSTEM");
 
-      LoginCommand command = LoginCommand.of(
-          "test@test.com", rawPassword, UserType.CUSTOMER, "device", false);
+      LoginCommand command =
+          LoginCommand.of("test@test.com", rawPassword, UserType.CUSTOMER, "device", false);
 
       given(authRepository.findByEmailAndUserType(anyString(), any()))
           .willReturn(Optional.of(auth));
@@ -127,11 +127,12 @@ class AuthCommandServiceTest {
 
     @Test
     void 비밀번호_불일치_시_실패한다() {
-      Auth auth = Auth.register("test@test.com", "Password123!", UserType.CUSTOMER,
-          passwordEncoder, "SYSTEM");
+      Auth auth =
+          Auth.register(
+              "test@test.com", "Password123!", UserType.CUSTOMER, passwordEncoder, "SYSTEM");
 
-      LoginCommand command = LoginCommand.of(
-          "test@test.com", "wrongPassword", UserType.CUSTOMER, "device", false);
+      LoginCommand command =
+          LoginCommand.of("test@test.com", "wrongPassword", UserType.CUSTOMER, "device", false);
 
       given(authRepository.findByEmailAndUserType(anyString(), any()))
           .willReturn(Optional.of(auth));
@@ -143,11 +144,10 @@ class AuthCommandServiceTest {
 
     @Test
     void 존재하지_않는_계정으로_로그인_시_실패한다() {
-      LoginCommand command = LoginCommand.of(
-          "notfound@test.com", "Password123!", UserType.CUSTOMER, "device", false);
+      LoginCommand command =
+          LoginCommand.of("notfound@test.com", "Password123!", UserType.CUSTOMER, "device", false);
 
-      given(authRepository.findByEmailAndUserType(anyString(), any()))
-          .willReturn(Optional.empty());
+      given(authRepository.findByEmailAndUserType(anyString(), any())).willReturn(Optional.empty());
 
       assertThatThrownBy(() -> authCommandService.login(command))
           .isInstanceOf(AuthException.class)
@@ -185,12 +185,13 @@ class AuthCommandServiceTest {
     @Test
     void 비밀번호_변경_성공한다() {
       String currentPassword = "Password123!";
-      Auth auth = Auth.register("test@test.com", currentPassword, UserType.CUSTOMER,
-          passwordEncoder, "SYSTEM");
+      Auth auth =
+          Auth.register(
+              "test@test.com", currentPassword, UserType.CUSTOMER, passwordEncoder, "SYSTEM");
       UUID authId = auth.getId();
 
-      ChangePasswordCommand command = ChangePasswordCommand.of(
-          authId, currentPassword, "NewPassword456!");
+      ChangePasswordCommand command =
+          ChangePasswordCommand.of(authId, currentPassword, "NewPassword456!");
 
       given(authRepository.findById(authId)).willReturn(Optional.of(auth));
 
@@ -202,12 +203,13 @@ class AuthCommandServiceTest {
 
     @Test
     void 현재_비밀번호_불일치_시_실패한다() {
-      Auth auth = Auth.register("test@test.com", "Password123!", UserType.CUSTOMER,
-          passwordEncoder, "SYSTEM");
+      Auth auth =
+          Auth.register(
+              "test@test.com", "Password123!", UserType.CUSTOMER, passwordEncoder, "SYSTEM");
       UUID authId = auth.getId();
 
-      ChangePasswordCommand command = ChangePasswordCommand.of(
-          authId, "wrongPassword", "NewPassword456!");
+      ChangePasswordCommand command =
+          ChangePasswordCommand.of(authId, "wrongPassword", "NewPassword456!");
 
       given(authRepository.findById(authId)).willReturn(Optional.of(auth));
 
@@ -223,8 +225,8 @@ class AuthCommandServiceTest {
     @Test
     void 회원탈퇴를_성공한다() {
       String password = "Password123!";
-      Auth auth = Auth.register("test@test.com", password, UserType.CUSTOMER,
-          passwordEncoder, "SYSTEM");
+      Auth auth =
+          Auth.register("test@test.com", password, UserType.CUSTOMER, passwordEncoder, "SYSTEM");
       UUID authId = auth.getId();
 
       WithdrawCommand command = WithdrawCommand.of(authId, password);
@@ -239,8 +241,9 @@ class AuthCommandServiceTest {
 
     @Test
     void 비밀번호_불일치_시_실패() {
-      Auth auth = Auth.register("test@test.com", "Password123!", UserType.CUSTOMER,
-          passwordEncoder, "SYSTEM");
+      Auth auth =
+          Auth.register(
+              "test@test.com", "Password123!", UserType.CUSTOMER, passwordEncoder, "SYSTEM");
       UUID authId = auth.getId();
 
       WithdrawCommand command = WithdrawCommand.of(authId, "wrongPassword");

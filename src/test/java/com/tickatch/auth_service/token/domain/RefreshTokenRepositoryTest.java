@@ -25,11 +25,9 @@ import org.springframework.transaction.annotation.Transactional;
 @DisplayName("RefreshTokenRepository 통합 테스트")
 class RefreshTokenRepositoryTest {
 
-  @Autowired
-  private RefreshTokenRepositoryImpl refreshTokenRepository;
+  @Autowired private RefreshTokenRepositoryImpl refreshTokenRepository;
 
-  @PersistenceContext
-  private EntityManager em;
+  @PersistenceContext private EntityManager em;
 
   private UUID authId;
 
@@ -48,7 +46,8 @@ class RefreshTokenRepositoryTest {
 
     @Test
     void RefreshToken을_저장하고_조회한다() {
-      RefreshToken token = RefreshToken.create(authId, UUID.randomUUID().toString(), "Chrome/Windows", false);
+      RefreshToken token =
+          RefreshToken.create(authId, UUID.randomUUID().toString(), "Chrome/Windows", false);
 
       RefreshToken saved = refreshTokenRepository.save(token);
 
@@ -59,7 +58,8 @@ class RefreshTokenRepositoryTest {
 
     @Test
     void ID로_RefreshToken을_조회한다() {
-      RefreshToken token = RefreshToken.create(authId, UUID.randomUUID().toString(), "Chrome/Windows", false);
+      RefreshToken token =
+          RefreshToken.create(authId, UUID.randomUUID().toString(), "Chrome/Windows", false);
       RefreshToken saved = refreshTokenRepository.save(token);
 
       Optional<RefreshToken> found = refreshTokenRepository.findById(saved.getId());
@@ -97,9 +97,13 @@ class RefreshTokenRepositoryTest {
 
     @Test
     void AuthId로_모든_RefreshToken을_조회한다() {
-      RefreshToken token1 = RefreshToken.create(authId, UUID.randomUUID().toString(), "Chrome/Windows", false);
-      RefreshToken token2 = RefreshToken.create(authId, UUID.randomUUID().toString(), "Safari/Mac", true);
-      RefreshToken otherToken = RefreshToken.create(UUID.randomUUID(), UUID.randomUUID().toString(), "Firefox/Linux", false);
+      RefreshToken token1 =
+          RefreshToken.create(authId, UUID.randomUUID().toString(), "Chrome/Windows", false);
+      RefreshToken token2 =
+          RefreshToken.create(authId, UUID.randomUUID().toString(), "Safari/Mac", true);
+      RefreshToken otherToken =
+          RefreshToken.create(
+              UUID.randomUUID(), UUID.randomUUID().toString(), "Firefox/Linux", false);
       refreshTokenRepository.save(token1);
       refreshTokenRepository.save(token2);
       refreshTokenRepository.save(otherToken);
@@ -112,8 +116,10 @@ class RefreshTokenRepositoryTest {
 
     @Test
     void AuthId로_사용가능한_RefreshToken만_조회한다() {
-      RefreshToken validToken = RefreshToken.create(authId, UUID.randomUUID().toString(), "Chrome/Windows", false);
-      RefreshToken revokedToken = RefreshToken.create(authId, UUID.randomUUID().toString(), "Safari/Mac", false);
+      RefreshToken validToken =
+          RefreshToken.create(authId, UUID.randomUUID().toString(), "Chrome/Windows", false);
+      RefreshToken revokedToken =
+          RefreshToken.create(authId, UUID.randomUUID().toString(), "Safari/Mac", false);
       revokedToken.revoke();
       refreshTokenRepository.save(validToken);
       refreshTokenRepository.save(revokedToken);
@@ -130,8 +136,10 @@ class RefreshTokenRepositoryTest {
 
     @Test
     void AuthId로_모든_RefreshToken을_삭제한다() {
-      RefreshToken token1 = RefreshToken.create(authId, UUID.randomUUID().toString(), "Chrome/Windows", false);
-      RefreshToken token2 = RefreshToken.create(authId, UUID.randomUUID().toString(), "Safari/Mac", true);
+      RefreshToken token1 =
+          RefreshToken.create(authId, UUID.randomUUID().toString(), "Chrome/Windows", false);
+      RefreshToken token2 =
+          RefreshToken.create(authId, UUID.randomUUID().toString(), "Safari/Mac", true);
       refreshTokenRepository.save(token1);
       refreshTokenRepository.save(token2);
 
@@ -144,8 +152,10 @@ class RefreshTokenRepositoryTest {
 
     @Test
     void AuthId로_모든_RefreshToken을_폐기한다() {
-      RefreshToken token1 = RefreshToken.create(authId, UUID.randomUUID().toString(), "Chrome/Windows", false);
-      RefreshToken token2 = RefreshToken.create(authId, UUID.randomUUID().toString(), "Safari/Mac", true);
+      RefreshToken token1 =
+          RefreshToken.create(authId, UUID.randomUUID().toString(), "Chrome/Windows", false);
+      RefreshToken token2 =
+          RefreshToken.create(authId, UUID.randomUUID().toString(), "Safari/Mac", true);
       refreshTokenRepository.save(token1);
       refreshTokenRepository.save(token2);
 
@@ -159,7 +169,8 @@ class RefreshTokenRepositoryTest {
 
     @Test
     void 이미_폐기된_토큰은_다시_폐기되지_않는다() {
-      RefreshToken token = RefreshToken.create(authId, UUID.randomUUID().toString(), "Chrome/Windows", false);
+      RefreshToken token =
+          RefreshToken.create(authId, UUID.randomUUID().toString(), "Chrome/Windows", false);
       token.revoke();
       refreshTokenRepository.save(token);
 
@@ -177,10 +188,12 @@ class RefreshTokenRepositoryTest {
       UUID authId1 = UUID.randomUUID();
       UUID authId2 = UUID.randomUUID();
 
-      RefreshToken validToken = RefreshToken.create(authId1, UUID.randomUUID().toString(), "Chrome/Windows", false);
+      RefreshToken validToken =
+          RefreshToken.create(authId1, UUID.randomUUID().toString(), "Chrome/Windows", false);
       refreshTokenRepository.save(validToken);
 
-      RefreshToken revokedToken = RefreshToken.create(authId2, UUID.randomUUID().toString(), "Safari/Mac", false);
+      RefreshToken revokedToken =
+          RefreshToken.create(authId2, UUID.randomUUID().toString(), "Safari/Mac", false);
       revokedToken.revoke();
       refreshTokenRepository.save(revokedToken);
 
@@ -204,12 +217,16 @@ class RefreshTokenRepositoryTest {
       authId1 = UUID.randomUUID();
       authId2 = UUID.randomUUID();
 
-      RefreshToken token1 = RefreshToken.create(authId1, UUID.randomUUID().toString(), "Chrome/Windows", false);
-      RefreshToken token2 = RefreshToken.create(authId1, UUID.randomUUID().toString(), "Safari/Mac", true);
+      RefreshToken token1 =
+          RefreshToken.create(authId1, UUID.randomUUID().toString(), "Chrome/Windows", false);
+      RefreshToken token2 =
+          RefreshToken.create(authId1, UUID.randomUUID().toString(), "Safari/Mac", true);
       token2.revoke();
 
-      RefreshToken token3 = RefreshToken.create(authId2, UUID.randomUUID().toString(), "Firefox/Linux", true);
-      RefreshToken token4 = RefreshToken.create(authId2, UUID.randomUUID().toString(), "Edge/Windows", false);
+      RefreshToken token3 =
+          RefreshToken.create(authId2, UUID.randomUUID().toString(), "Firefox/Linux", true);
+      RefreshToken token4 =
+          RefreshToken.create(authId2, UUID.randomUUID().toString(), "Edge/Windows", false);
 
       refreshTokenRepository.save(token1);
       refreshTokenRepository.save(token2);
@@ -229,9 +246,8 @@ class RefreshTokenRepositoryTest {
 
     @Test
     void AuthId로_검색한다() {
-      RefreshTokenSearchCondition condition = RefreshTokenSearchCondition.builder()
-          .authId(authId1)
-          .build();
+      RefreshTokenSearchCondition condition =
+          RefreshTokenSearchCondition.builder().authId(authId1).build();
       PageRequest pageable = PageRequest.of(0, 10);
 
       Page<RefreshToken> result = refreshTokenRepository.findAllByCondition(condition, pageable);
@@ -242,9 +258,8 @@ class RefreshTokenRepositoryTest {
 
     @Test
     void 폐기여부로_검색한다() {
-      RefreshTokenSearchCondition condition = RefreshTokenSearchCondition.builder()
-          .revoked(true)
-          .build();
+      RefreshTokenSearchCondition condition =
+          RefreshTokenSearchCondition.builder().revoked(true).build();
       PageRequest pageable = PageRequest.of(0, 10);
 
       Page<RefreshToken> result = refreshTokenRepository.findAllByCondition(condition, pageable);
@@ -255,9 +270,8 @@ class RefreshTokenRepositoryTest {
 
     @Test
     void 만료여부로_검색한다_유효한토큰() {
-      RefreshTokenSearchCondition condition = RefreshTokenSearchCondition.builder()
-          .expired(false)
-          .build();
+      RefreshTokenSearchCondition condition =
+          RefreshTokenSearchCondition.builder().expired(false).build();
       PageRequest pageable = PageRequest.of(0, 10);
 
       Page<RefreshToken> result = refreshTokenRepository.findAllByCondition(condition, pageable);
@@ -267,9 +281,8 @@ class RefreshTokenRepositoryTest {
 
     @Test
     void 로그인유지_여부로_검색한다() {
-      RefreshTokenSearchCondition condition = RefreshTokenSearchCondition.builder()
-          .rememberMe(true)
-          .build();
+      RefreshTokenSearchCondition condition =
+          RefreshTokenSearchCondition.builder().rememberMe(true).build();
       PageRequest pageable = PageRequest.of(0, 10);
 
       Page<RefreshToken> result = refreshTokenRepository.findAllByCondition(condition, pageable);
@@ -280,9 +293,8 @@ class RefreshTokenRepositoryTest {
 
     @Test
     void 디바이스정보로_검색한다() {
-      RefreshTokenSearchCondition condition = RefreshTokenSearchCondition.builder()
-          .deviceInfo("Windows")
-          .build();
+      RefreshTokenSearchCondition condition =
+          RefreshTokenSearchCondition.builder().deviceInfo("Windows").build();
       PageRequest pageable = PageRequest.of(0, 10);
 
       Page<RefreshToken> result = refreshTokenRepository.findAllByCondition(condition, pageable);
@@ -293,10 +305,8 @@ class RefreshTokenRepositoryTest {
 
     @Test
     void 복합_조건으로_검색한다() {
-      RefreshTokenSearchCondition condition = RefreshTokenSearchCondition.builder()
-          .authId(authId1)
-          .revoked(false)
-          .build();
+      RefreshTokenSearchCondition condition =
+          RefreshTokenSearchCondition.builder().authId(authId1).revoked(false).build();
       PageRequest pageable = PageRequest.of(0, 10);
 
       Page<RefreshToken> result = refreshTokenRepository.findAllByCondition(condition, pageable);
@@ -312,9 +322,8 @@ class RefreshTokenRepositoryTest {
 
       Page<RefreshToken> result = refreshTokenRepository.findAllByCondition(condition, pageable);
 
-      List<String> deviceInfos = result.getContent().stream()
-          .map(RefreshToken::getDeviceInfo)
-          .toList();
+      List<String> deviceInfos =
+          result.getContent().stream().map(RefreshToken::getDeviceInfo).toList();
       assertThat(deviceInfos).isSorted();
     }
 

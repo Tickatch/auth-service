@@ -24,7 +24,6 @@ public class AuthAdapter implements AuthPort {
 
   @Override
   public Optional<UserType> findUserTypeByAuthId(UUID authId) {
-    return authRepository.findById(authId)
-        .map(auth -> auth.getUserType());
+    return authRepository.findById(authId).map(auth -> auth.getUserType());
   }
 }

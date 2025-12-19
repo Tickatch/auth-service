@@ -69,9 +69,7 @@ public class OAuthProperties {
     return provider;
   }
 
-  /**
-   * 개별 OAuth 제공자 설정.
-   */
+  /** 개별 OAuth 제공자 설정. */
   @Getter
   @Setter
   public static class Provider {
@@ -85,8 +83,10 @@ public class OAuthProperties {
     private String scope;
 
     public boolean isConfigured() {
-      return clientId != null && !clientId.isBlank()
-          && clientSecret != null && !clientSecret.isBlank();
+      return clientId != null
+          && !clientId.isBlank()
+          && clientSecret != null
+          && !clientSecret.isBlank();
     }
   }
 }

@@ -23,15 +23,10 @@ public record LoginResult(
     String accessToken,
     String refreshToken,
     LocalDateTime accessTokenExpiresAt,
-    LocalDateTime refreshTokenExpiresAt
-) {
+    LocalDateTime refreshTokenExpiresAt) {
 
   public static LoginResult of(
-      UUID authId,
-      String email,
-      UserType userType,
-      TokenResult tokenResult
-  ) {
+      UUID authId, String email, UserType userType, TokenResult tokenResult) {
     return new LoginResult(
         authId,
         email,
@@ -39,7 +34,6 @@ public record LoginResult(
         tokenResult.accessToken(),
         tokenResult.refreshToken(),
         tokenResult.accessTokenExpiresAt(),
-        tokenResult.refreshTokenExpiresAt()
-    );
+        tokenResult.refreshTokenExpiresAt());
   }
 }

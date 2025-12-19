@@ -21,11 +21,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class TokenQueryServiceTest {
 
-  @InjectMocks
-  private TokenQueryService tokenQueryService;
+  @InjectMocks private TokenQueryService tokenQueryService;
 
-  @Mock
-  private RefreshTokenRepository refreshTokenRepository;
+  @Mock private RefreshTokenRepository refreshTokenRepository;
 
   private RefreshToken createRefreshToken(UUID authId, String tokenValue) {
     return RefreshToken.create(authId, tokenValue, "device-info", false);
@@ -40,8 +38,7 @@ class TokenQueryServiceTest {
       RefreshToken refreshToken = createRefreshToken(authId, "token-value");
       UUID tokenId = refreshToken.getId();
 
-      given(refreshTokenRepository.findById(tokenId))
-          .willReturn(Optional.of(refreshToken));
+      given(refreshTokenRepository.findById(tokenId)).willReturn(Optional.of(refreshToken));
 
       Optional<TokenInfo> result = tokenQueryService.findById(tokenId);
 
@@ -88,8 +85,7 @@ class TokenQueryServiceTest {
       RefreshToken token1 = createRefreshToken(authId, "token1");
       RefreshToken token2 = createRefreshToken(authId, "token2");
 
-      given(refreshTokenRepository.findAllByAuthId(authId))
-          .willReturn(List.of(token1, token2));
+      given(refreshTokenRepository.findAllByAuthId(authId)).willReturn(List.of(token1, token2));
 
       List<TokenInfo> result = tokenQueryService.findAllByAuthId(authId);
 
@@ -115,8 +111,7 @@ class TokenQueryServiceTest {
       UUID authId = UUID.randomUUID();
       RefreshToken usableToken = createRefreshToken(authId, "usable-token");
 
-      given(refreshTokenRepository.findAllUsableByAuthId(authId))
-          .willReturn(List.of(usableToken));
+      given(refreshTokenRepository.findAllUsableByAuthId(authId)).willReturn(List.of(usableToken));
 
       List<TokenInfo> result = tokenQueryService.findAllUsableByAuthId(authId);
 

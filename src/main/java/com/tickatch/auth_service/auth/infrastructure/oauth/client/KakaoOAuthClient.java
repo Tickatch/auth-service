@@ -13,6 +13,7 @@ import org.springframework.web.client.RestTemplate;
  * <p>카카오 로그인 API를 사용하여 인증을 처리한다.
  *
  * <p>카카오 사용자 정보 응답 형식:
+ *
  * <pre>
  * {
  *   "id": 123456789,
@@ -49,9 +50,8 @@ public class KakaoOAuthClient extends AbstractOAuthClient {
     Map<String, Object> kakaoAccount = (Map<String, Object>) userInfoMap.get("kakao_account");
     String email = kakaoAccount != null ? (String) kakaoAccount.get("email") : null;
 
-    Map<String, Object> profile = kakaoAccount != null
-        ? (Map<String, Object>) kakaoAccount.get("profile")
-        : null;
+    Map<String, Object> profile =
+        kakaoAccount != null ? (Map<String, Object>) kakaoAccount.get("profile") : null;
     String nickname = profile != null ? (String) profile.get("nickname") : null;
     String profileImage = profile != null ? (String) profile.get("profile_image_url") : null;
 

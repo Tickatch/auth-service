@@ -26,8 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 @DisplayName("AuthRepository 통합 테스트")
 class AuthRepositoryTest {
 
-  @Autowired
-  private AuthRepositoryImpl authRepository;
+  @Autowired private AuthRepositoryImpl authRepository;
 
   private PasswordEncoder encoder;
 
@@ -41,7 +40,8 @@ class AuthRepositoryTest {
 
     @Test
     void Auth를_저장하고_조회한다() {
-      Auth auth = Auth.register("test@example.com", "Pass123!", UserType.CUSTOMER, encoder, "SYSTEM");
+      Auth auth =
+          Auth.register("test@example.com", "Pass123!", UserType.CUSTOMER, encoder, "SYSTEM");
 
       Auth saved = authRepository.save(auth);
 
@@ -52,7 +52,8 @@ class AuthRepositoryTest {
 
     @Test
     void ID로_Auth를_조회한다() {
-      Auth auth = Auth.register("test@example.com", "Pass123!", UserType.CUSTOMER, encoder, "SYSTEM");
+      Auth auth =
+          Auth.register("test@example.com", "Pass123!", UserType.CUSTOMER, encoder, "SYSTEM");
       Auth saved = authRepository.save(auth);
 
       Optional<Auth> found = authRepository.findById(saved.getId());
@@ -67,10 +68,12 @@ class AuthRepositoryTest {
 
     @Test
     void 이메일과_사용자유형으로_Auth를_조회한다() {
-      Auth auth = Auth.register("test@example.com", "Pass123!", UserType.CUSTOMER, encoder, "SYSTEM");
+      Auth auth =
+          Auth.register("test@example.com", "Pass123!", UserType.CUSTOMER, encoder, "SYSTEM");
       authRepository.save(auth);
 
-      Optional<Auth> found = authRepository.findByEmailAndUserType("test@example.com", UserType.CUSTOMER);
+      Optional<Auth> found =
+          authRepository.findByEmailAndUserType("test@example.com", UserType.CUSTOMER);
 
       assertThat(found).isPresent();
       assertThat(found.get().getEmail()).isEqualTo("test@example.com");
@@ -78,13 +81,17 @@ class AuthRepositoryTest {
 
     @Test
     void 동일_이메일_다른_유형은_별도로_조회된다() {
-      Auth customer = Auth.register("test@example.com", "Pass123!", UserType.CUSTOMER, encoder, "SYSTEM");
-      Auth seller = Auth.register("test@example.com", "Pass123!", UserType.SELLER, encoder, "SYSTEM");
+      Auth customer =
+          Auth.register("test@example.com", "Pass123!", UserType.CUSTOMER, encoder, "SYSTEM");
+      Auth seller =
+          Auth.register("test@example.com", "Pass123!", UserType.SELLER, encoder, "SYSTEM");
       authRepository.save(customer);
       authRepository.save(seller);
 
-      Optional<Auth> foundCustomer = authRepository.findByEmailAndUserType("test@example.com", UserType.CUSTOMER);
-      Optional<Auth> foundSeller = authRepository.findByEmailAndUserType("test@example.com", UserType.SELLER);
+      Optional<Auth> foundCustomer =
+          authRepository.findByEmailAndUserType("test@example.com", UserType.CUSTOMER);
+      Optional<Auth> foundSeller =
+          authRepository.findByEmailAndUserType("test@example.com", UserType.SELLER);
 
       assertThat(foundCustomer).isPresent();
       assertThat(foundSeller).isPresent();
@@ -93,10 +100,12 @@ class AuthRepositoryTest {
 
     @Test
     void 존재하지_않는_조합은_빈값을_반환한다() {
-      Auth auth = Auth.register("test@example.com", "Pass123!", UserType.CUSTOMER, encoder, "SYSTEM");
+      Auth auth =
+          Auth.register("test@example.com", "Pass123!", UserType.CUSTOMER, encoder, "SYSTEM");
       authRepository.save(auth);
 
-      Optional<Auth> found = authRepository.findByEmailAndUserType("test@example.com", UserType.SELLER);
+      Optional<Auth> found =
+          authRepository.findByEmailAndUserType("test@example.com", UserType.SELLER);
 
       assertThat(found).isEmpty();
     }
@@ -107,17 +116,20 @@ class AuthRepositoryTest {
 
     @Test
     void 이메일_사용자유형_중복_존재_시_true를_반환한다() {
-      Auth auth = Auth.register("test@example.com", "Pass123!", UserType.CUSTOMER, encoder, "SYSTEM");
+      Auth auth =
+          Auth.register("test@example.com", "Pass123!", UserType.CUSTOMER, encoder, "SYSTEM");
       authRepository.save(auth);
 
-      boolean exists = authRepository.existsByEmailAndUserType("test@example.com", UserType.CUSTOMER);
+      boolean exists =
+          authRepository.existsByEmailAndUserType("test@example.com", UserType.CUSTOMER);
 
       assertThat(exists).isTrue();
     }
 
     @Test
     void 이메일_사용자유형_중복_없으면_false를_반환한다() {
-      boolean exists = authRepository.existsByEmailAndUserType("test@example.com", UserType.CUSTOMER);
+      boolean exists =
+          authRepository.existsByEmailAndUserType("test@example.com", UserType.CUSTOMER);
 
       assertThat(exists).isFalse();
     }
@@ -128,12 +140,19 @@ class AuthRepositoryTest {
 
     @Test
     void 소셜_로그인_제공자_정보로_Auth를_조회한다() {
-      Auth auth = Auth.registerWithOAuth(
-          "test@example.com", "Pass123!", UserType.CUSTOMER,
-          ProviderType.KAKAO, "kakao123", encoder, "SYSTEM");
+      Auth auth =
+          Auth.registerWithOAuth(
+              "test@example.com",
+              "Pass123!",
+              UserType.CUSTOMER,
+              ProviderType.KAKAO,
+              "kakao123",
+              encoder,
+              "SYSTEM");
       authRepository.save(auth);
 
-      Optional<Auth> found = authRepository.findByProviderAndProviderUserId(ProviderType.KAKAO, "kakao123");
+      Optional<Auth> found =
+          authRepository.findByProviderAndProviderUserId(ProviderType.KAKAO, "kakao123");
 
       assertThat(found).isPresent();
       assertThat(found.get().getEmail()).isEqualTo("test@example.com");
@@ -142,7 +161,8 @@ class AuthRepositoryTest {
 
     @Test
     void 존재하지_않는_소셜_정보는_빈값을_반환한다() {
-      Optional<Auth> found = authRepository.findByProviderAndProviderUserId(ProviderType.KAKAO, "nonexistent");
+      Optional<Auth> found =
+          authRepository.findByProviderAndProviderUserId(ProviderType.KAKAO, "nonexistent");
 
       assertThat(found).isEmpty();
     }
@@ -153,10 +173,14 @@ class AuthRepositoryTest {
 
     @BeforeEach
     void setUpTestData() {
-      Auth customer1 = Auth.register("customer1@example.com", "Pass123!", UserType.CUSTOMER, encoder, "SYSTEM");
-      Auth customer2 = Auth.register("customer2@example.com", "Pass123!", UserType.CUSTOMER, encoder, "SYSTEM");
-      Auth seller = Auth.register("seller@example.com", "Pass123!", UserType.SELLER, encoder, "SYSTEM");
-      Auth admin = Auth.register("admin@example.com", "Pass123!", UserType.ADMIN, encoder, "SYSTEM");
+      Auth customer1 =
+          Auth.register("customer1@example.com", "Pass123!", UserType.CUSTOMER, encoder, "SYSTEM");
+      Auth customer2 =
+          Auth.register("customer2@example.com", "Pass123!", UserType.CUSTOMER, encoder, "SYSTEM");
+      Auth seller =
+          Auth.register("seller@example.com", "Pass123!", UserType.SELLER, encoder, "SYSTEM");
+      Auth admin =
+          Auth.register("admin@example.com", "Pass123!", UserType.ADMIN, encoder, "SYSTEM");
 
       customer1.connectProvider(ProviderType.KAKAO, "kakao1");
       customer2.connectProvider(ProviderType.NAVER, "naver1");
@@ -180,9 +204,7 @@ class AuthRepositoryTest {
 
     @Test
     void 이메일로_부분_검색한다() {
-      AuthSearchCondition condition = AuthSearchCondition.builder()
-          .email("customer")
-          .build();
+      AuthSearchCondition condition = AuthSearchCondition.builder().email("customer").build();
       PageRequest pageable = PageRequest.of(0, 10);
 
       Page<Auth> result = authRepository.findAllByCondition(condition, pageable);
@@ -193,9 +215,8 @@ class AuthRepositoryTest {
 
     @Test
     void 사용자_유형으로_검색한다() {
-      AuthSearchCondition condition = AuthSearchCondition.builder()
-          .userType(UserType.CUSTOMER)
-          .build();
+      AuthSearchCondition condition =
+          AuthSearchCondition.builder().userType(UserType.CUSTOMER).build();
       PageRequest pageable = PageRequest.of(0, 10);
 
       Page<Auth> result = authRepository.findAllByCondition(condition, pageable);
@@ -206,9 +227,8 @@ class AuthRepositoryTest {
 
     @Test
     void 계정_상태로_검색한다() {
-      AuthSearchCondition condition = AuthSearchCondition.builder()
-          .status(AuthStatus.LOCKED)
-          .build();
+      AuthSearchCondition condition =
+          AuthSearchCondition.builder().status(AuthStatus.LOCKED).build();
       PageRequest pageable = PageRequest.of(0, 10);
 
       Page<Auth> result = authRepository.findAllByCondition(condition, pageable);
@@ -219,9 +239,8 @@ class AuthRepositoryTest {
 
     @Test
     void 소셜_로그인_제공자로_검색한다() {
-      AuthSearchCondition condition = AuthSearchCondition.builder()
-          .providerType(ProviderType.KAKAO)
-          .build();
+      AuthSearchCondition condition =
+          AuthSearchCondition.builder().providerType(ProviderType.KAKAO).build();
       PageRequest pageable = PageRequest.of(0, 10);
 
       Page<Auth> result = authRepository.findAllByCondition(condition, pageable);
@@ -232,10 +251,11 @@ class AuthRepositoryTest {
 
     @Test
     void 복합_조건으로_검색한다() {
-      AuthSearchCondition condition = AuthSearchCondition.builder()
-          .userType(UserType.CUSTOMER)
-          .status(AuthStatus.ACTIVE)
-          .build();
+      AuthSearchCondition condition =
+          AuthSearchCondition.builder()
+              .userType(UserType.CUSTOMER)
+              .status(AuthStatus.ACTIVE)
+              .build();
       PageRequest pageable = PageRequest.of(0, 10);
 
       Page<Auth> result = authRepository.findAllByCondition(condition, pageable);
@@ -268,9 +288,8 @@ class AuthRepositoryTest {
 
     @Test
     void Provider_정보가_함께_조회된다() {
-      AuthSearchCondition condition = AuthSearchCondition.builder()
-          .providerType(ProviderType.KAKAO)
-          .build();
+      AuthSearchCondition condition =
+          AuthSearchCondition.builder().providerType(ProviderType.KAKAO).build();
       PageRequest pageable = PageRequest.of(0, 10);
 
       Page<Auth> result = authRepository.findAllByCondition(condition, pageable);

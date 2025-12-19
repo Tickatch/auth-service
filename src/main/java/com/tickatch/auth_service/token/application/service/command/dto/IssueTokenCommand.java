@@ -12,13 +12,10 @@ import java.util.UUID;
  * @param rememberMe 로그인 유지 여부
  */
 public record IssueTokenCommand(
-    UUID authId,
-    UserType userType,
-    String deviceInfo,
-    boolean rememberMe
-) {
+    UUID authId, UserType userType, String deviceInfo, boolean rememberMe) {
 
-  public static IssueTokenCommand of(UUID authId, UserType userType, String deviceInfo, boolean rememberMe) {
+  public static IssueTokenCommand of(
+      UUID authId, UserType userType, String deviceInfo, boolean rememberMe) {
     return new IssueTokenCommand(authId, userType, deviceInfo, rememberMe);
   }
 }

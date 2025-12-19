@@ -32,9 +32,7 @@ public class UserStatusChangedEvent extends DomainEvent {
   /** 라우팅 키 */
   private final String routingKey;
 
-  /**
-   * JSON 역직렬화용 생성자.
-   */
+  /** JSON 역직렬화용 생성자. */
   @JsonCreator
   public UserStatusChangedEvent(
       @JsonProperty("eventId") String eventId,
@@ -66,23 +64,17 @@ public class UserStatusChangedEvent extends DomainEvent {
     return routingKey;
   }
 
-  /**
-   * 탈퇴 이벤트인지 확인한다.
-   */
+  /** 탈퇴 이벤트인지 확인한다. */
   public boolean isWithdrawn() {
     return "WITHDRAWN".equals(statusChangeType);
   }
 
-  /**
-   * 정지 이벤트인지 확인한다.
-   */
+  /** 정지 이벤트인지 확인한다. */
   public boolean isSuspended() {
     return "SUSPENDED".equals(statusChangeType);
   }
 
-  /**
-   * 활성화 이벤트인지 확인한다.
-   */
+  /** 활성화 이벤트인지 확인한다. */
   public boolean isActivated() {
     return "ACTIVATED".equals(statusChangeType);
   }

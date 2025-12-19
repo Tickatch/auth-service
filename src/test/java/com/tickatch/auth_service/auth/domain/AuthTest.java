@@ -44,7 +44,7 @@ class AuthTest {
     @Test
     void null_이메일로_생성하면_예외를_던진다() {
       assertThatThrownBy(
-          () -> Auth.register(null, "Pass123!", UserType.CUSTOMER, encoder, "SYSTEM"))
+              () -> Auth.register(null, "Pass123!", UserType.CUSTOMER, encoder, "SYSTEM"))
           .isInstanceOf(AuthException.class)
           .extracting(e -> ((AuthException) e).getErrorCode())
           .isEqualTo(AuthErrorCode.INVALID_EMAIL);
@@ -61,7 +61,7 @@ class AuthTest {
     @Test
     void null_UserType으로_생성하면_예외를_던진다() {
       assertThatThrownBy(
-          () -> Auth.register("test@example.com", "Pass123!", null, encoder, "SYSTEM"))
+              () -> Auth.register("test@example.com", "Pass123!", null, encoder, "SYSTEM"))
           .isInstanceOf(AuthException.class)
           .extracting(e -> ((AuthException) e).getErrorCode())
           .isEqualTo(AuthErrorCode.INVALID_USER_TYPE);
@@ -108,15 +108,15 @@ class AuthTest {
     @Test
     void SELLER는_소셜_로그인으로_가입할_수_없다() {
       assertThatThrownBy(
-          () ->
-              Auth.registerWithOAuth(
-                  "seller@example.com",
-                  "Pass123!",
-                  UserType.SELLER,
-                  ProviderType.KAKAO,
-                  "kakao123",
-                  encoder,
-                  "SYSTEM"))
+              () ->
+                  Auth.registerWithOAuth(
+                      "seller@example.com",
+                      "Pass123!",
+                      UserType.SELLER,
+                      ProviderType.KAKAO,
+                      "kakao123",
+                      encoder,
+                      "SYSTEM"))
           .isInstanceOf(AuthException.class)
           .extracting(e -> ((AuthException) e).getErrorCode())
           .isEqualTo(AuthErrorCode.OAUTH_NOT_ALLOWED_FOR_USER_TYPE);
@@ -125,15 +125,15 @@ class AuthTest {
     @Test
     void ADMIN은_소셜_로그인으로_가입할_수_없다() {
       assertThatThrownBy(
-          () ->
-              Auth.registerWithOAuth(
-                  "admin@example.com",
-                  "Pass123!",
-                  UserType.ADMIN,
-                  ProviderType.GOOGLE,
-                  "google123",
-                  encoder,
-                  "SYSTEM"))
+              () ->
+                  Auth.registerWithOAuth(
+                      "admin@example.com",
+                      "Pass123!",
+                      UserType.ADMIN,
+                      ProviderType.GOOGLE,
+                      "google123",
+                      encoder,
+                      "SYSTEM"))
           .isInstanceOf(AuthException.class)
           .extracting(e -> ((AuthException) e).getErrorCode())
           .isEqualTo(AuthErrorCode.OAUTH_NOT_ALLOWED_FOR_USER_TYPE);
@@ -358,8 +358,7 @@ class AuthTest {
 
     @Test
     void ADMIN은_소셜_로그인을_연동할_수_없다() {
-      Auth auth =
-          Auth.register("admin@example.com", "Pass123!", UserType.ADMIN, encoder, "SYSTEM");
+      Auth auth = Auth.register("admin@example.com", "Pass123!", UserType.ADMIN, encoder, "SYSTEM");
 
       assertThatThrownBy(() -> auth.connectProvider(ProviderType.GOOGLE, "google123"))
           .isInstanceOf(AuthException.class)

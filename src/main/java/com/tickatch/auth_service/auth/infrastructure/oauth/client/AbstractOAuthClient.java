@@ -32,7 +32,8 @@ public abstract class AbstractOAuthClient implements OAuthClient {
   protected final OAuthProperties.Provider providerConfig;
   protected final RestTemplate restTemplate;
 
-  protected AbstractOAuthClient(OAuthProperties.Provider providerConfig, RestTemplate restTemplate) {
+  protected AbstractOAuthClient(
+      OAuthProperties.Provider providerConfig, RestTemplate restTemplate) {
     this.providerConfig = providerConfig;
     this.restTemplate = restTemplate;
   }
@@ -66,9 +67,7 @@ public abstract class AbstractOAuthClient implements OAuthClient {
     return providerConfig != null && providerConfig.isConfigured();
   }
 
-  /**
-   * 인가 코드로 액세스 토큰을 발급받는다.
-   */
+  /** 인가 코드로 액세스 토큰을 발급받는다. */
   protected OAuthTokenResponse getAccessToken(String code) {
     HttpHeaders headers = new HttpHeaders();
     headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
@@ -83,11 +82,9 @@ public abstract class AbstractOAuthClient implements OAuthClient {
     HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, headers);
 
     try {
-      ResponseEntity<OAuthTokenResponse> response = restTemplate.postForEntity(
-          providerConfig.getTokenUri(),
-          request,
-          OAuthTokenResponse.class
-      );
+      ResponseEntity<OAuthTokenResponse> response =
+          restTemplate.postForEntity(
+              providerConfig.getTokenUri(), request, OAuthTokenResponse.class);
 
       if (response.getBody() == null || response.getBody().accessToken() == null) {
         log.error("OAuth 토큰 응답이 비어있습니다 - provider: {}", getProviderType());
@@ -101,9 +98,7 @@ public abstract class AbstractOAuthClient implements OAuthClient {
     }
   }
 
-  /**
-   * 액세스 토큰으로 사용자 정보를 조회한다.
-   */
+  /** 액세스 토큰으로 사용자 정보를 조회한다. */
   @SuppressWarnings("unchecked")
   protected Map<String, Object> fetchUserInfo(String accessToken) {
     HttpHeaders headers = new HttpHeaders();
@@ -112,12 +107,9 @@ public abstract class AbstractOAuthClient implements OAuthClient {
     HttpEntity<Void> request = new HttpEntity<>(headers);
 
     try {
-      ResponseEntity<Map> response = restTemplate.exchange(
-          providerConfig.getUserInfoUri(),
-          HttpMethod.GET,
-          request,
-          Map.class
-      );
+      ResponseEntity<Map> response =
+          restTemplate.exchange(
+              providerConfig.getUserInfoUri(), HttpMethod.GET, request, Map.class);
 
       if (response.getBody() == null) {
         log.error("OAuth 사용자 정보 응답이 비어있습니다 - provider: {}", getProviderType());
@@ -131,8 +123,6 @@ public abstract class AbstractOAuthClient implements OAuthClient {
     }
   }
 
-  /**
-   * 제공자별 사용자 정보 파싱. 하위 클래스에서 구현한다.
-   */
+  /** 제공자별 사용자 정보 파싱. 하위 클래스에서 구현한다. */
   protected abstract OAuthUserInfo parseUserInfo(Map<String, Object> userInfoMap);
 }

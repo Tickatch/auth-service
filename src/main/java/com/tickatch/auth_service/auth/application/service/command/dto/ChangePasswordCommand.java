@@ -9,11 +9,7 @@ import java.util.UUID;
  * @param currentPassword 현재 비밀번호
  * @param newPassword 새 비밀번호
  */
-public record ChangePasswordCommand(
-    UUID authId,
-    String currentPassword,
-    String newPassword
-) {
+public record ChangePasswordCommand(UUID authId, String currentPassword, String newPassword) {
 
   public static ChangePasswordCommand of(UUID authId, String currentPassword, String newPassword) {
     return new ChangePasswordCommand(authId, currentPassword, newPassword);

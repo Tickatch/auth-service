@@ -37,10 +37,11 @@ public class OAuthAdapter implements OAuthPort {
 
   public OAuthAdapter(OAuthProperties oAuthProperties, RestTemplateBuilder restTemplateBuilder) {
     this.oAuthProperties = oAuthProperties;
-    this.restTemplate = restTemplateBuilder
-        .connectTimeout(Duration.ofSeconds(5))
-        .readTimeout(Duration.ofSeconds(10))
-        .build();
+    this.restTemplate =
+        restTemplateBuilder
+            .connectTimeout(Duration.ofSeconds(5))
+            .readTimeout(Duration.ofSeconds(10))
+            .build();
   }
 
   @PostConstruct
@@ -83,9 +84,7 @@ public class OAuthAdapter implements OAuthPort {
     return client != null && client.isConfigured();
   }
 
-  /**
-   * 제공자별 클라이언트를 가져온다.
-   */
+  /** 제공자별 클라이언트를 가져온다. */
   private OAuthClient getClient(ProviderType providerType) {
     OAuthClient client = clients.get(providerType);
     if (client == null || !client.isConfigured()) {

@@ -7,10 +7,11 @@ import java.util.UUID;
 /**
  * JWT 토큰 생성 및 검증을 위한 아웃바운드 포트.
  *
- * <p>Application 계층에서 JWT 생성/검증이 필요할 때 이 인터페이스를 통해 접근한다. 실제 구현은 Infrastructure
- * 계층의 JwtTokenProvider가 담당한다.
+ * <p>Application 계층에서 JWT 생성/검증이 필요할 때 이 인터페이스를 통해 접근한다. 실제 구현은 Infrastructure 계층의
+ * JwtTokenProvider가 담당한다.
  *
  * <p>RS256 알고리즘을 사용하여:
+ *
  * <ul>
  *   <li>서명: Private Key (Auth Service만 보유)
  *   <li>검증: Public Key (외부 공개 가능)

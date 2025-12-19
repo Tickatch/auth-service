@@ -1,7 +1,6 @@
 package com.tickatch.auth_service.global.jwt.infrastructure;
 
 import jakarta.annotation.PostConstruct;
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -26,6 +25,7 @@ import org.springframework.stereotype.Component;
  * <p>RSA 키 쌍을 생성, 로딩, 저장하는 역할을 담당한다.
  *
  * <p>키 로딩 우선순위:
+ *
  * <ol>
  *   <li>환경변수로 키 값이 제공된 경우
  *   <li>지정된 파일 경로에 키 파일이 있는 경우
@@ -47,11 +47,9 @@ public class RsaKeyManager {
 
   private final JwtProperties jwtProperties;
 
-  @Getter
-  private RSAPrivateKey privateKey;
+  @Getter private RSAPrivateKey privateKey;
 
-  @Getter
-  private RSAPublicKey publicKey;
+  @Getter private RSAPublicKey publicKey;
 
   @PostConstruct
   public void init() {
@@ -63,9 +61,7 @@ public class RsaKeyManager {
     }
   }
 
-  /**
-   * 키를 로딩하거나 없으면 생성한다.
-   */
+  /** 키를 로딩하거나 없으면 생성한다. */
   private void loadOrGenerateKeys() throws Exception {
     // 1순위: 환경변수에서 로딩
     if (jwtProperties.hasPrivateKeyValue() && jwtProperties.hasPublicKeyValue()) {
@@ -79,8 +75,10 @@ public class RsaKeyManager {
       String privateKeyPath = jwtProperties.getPrivateKeyPath();
       String publicKeyPath = jwtProperties.getPublicKeyPath();
 
-      if (privateKeyPath != null && !privateKeyPath.isBlank()
-          && publicKeyPath != null && !publicKeyPath.isBlank()) {
+      if (privateKeyPath != null
+          && !privateKeyPath.isBlank()
+          && publicKeyPath != null
+          && !publicKeyPath.isBlank()) {
         Path privatePath = Paths.get(privateKeyPath);
         Path publicPath = Paths.get(publicKeyPath);
 
@@ -108,9 +106,7 @@ public class RsaKeyManager {
     generateAndSaveKeys(keyDir);
   }
 
-  /**
-   * 환경변수에서 키를 로딩한다.
-   */
+  /** 환경변수에서 키를 로딩한다. */
   private void loadKeysFromEnv() throws Exception {
     byte[] privateKeyBytes = Base64.getDecoder().decode(jwtProperties.getPrivateKey());
     byte[] publicKeyBytes = Base64.getDecoder().decode(jwtProperties.getPublicKey());
@@ -124,9 +120,7 @@ public class RsaKeyManager {
     this.publicKey = (RSAPublicKey) keyFactory.generatePublic(publicKeySpec);
   }
 
-  /**
-   * 파일에서 키를 로딩한다.
-   */
+  /** 파일에서 키를 로딩한다. */
   private void loadKeysFromFiles(Path privatePath, Path publicPath) throws Exception {
     String privateKeyPem = Files.readString(privatePath);
     String publicKeyPem = Files.readString(publicPath);
@@ -135,9 +129,7 @@ public class RsaKeyManager {
     this.publicKey = parsePublicKey(publicKeyPem);
   }
 
-  /**
-   * 새 키 쌍을 생성하고 파일로 저장한다.
-   */
+  /** 새 키 쌍을 생성하고 파일로 저장한다. */
   private void generateAndSaveKeys(Path keyDir) throws Exception {
     // 키 쌍 생성
     KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
@@ -162,14 +154,13 @@ public class RsaKeyManager {
     log.info("  Public Key: {}", publicPath.toAbsolutePath());
   }
 
-  /**
-   * PEM 문자열을 RSAPrivateKey로 파싱한다.
-   */
-  private RSAPrivateKey parsePrivateKey(String pem) throws NoSuchAlgorithmException, InvalidKeySpecException {
-    String base64 = pem
-        .replace("-----BEGIN PRIVATE KEY-----", "")
-        .replace("-----END PRIVATE KEY-----", "")
-        .replaceAll("\\s", "");
+  /** PEM 문자열을 RSAPrivateKey로 파싱한다. */
+  private RSAPrivateKey parsePrivateKey(String pem)
+      throws NoSuchAlgorithmException, InvalidKeySpecException {
+    String base64 =
+        pem.replace("-----BEGIN PRIVATE KEY-----", "")
+            .replace("-----END PRIVATE KEY-----", "")
+            .replaceAll("\\s", "");
 
     byte[] keyBytes = Base64.getDecoder().decode(base64);
     PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(keyBytes);
@@ -178,14 +169,13 @@ public class RsaKeyManager {
     return (RSAPrivateKey) keyFactory.generatePrivate(keySpec);
   }
 
-  /**
-   * PEM 문자열을 RSAPublicKey로 파싱한다.
-   */
-  private RSAPublicKey parsePublicKey(String pem) throws NoSuchAlgorithmException, InvalidKeySpecException {
-    String base64 = pem
-        .replace("-----BEGIN PUBLIC KEY-----", "")
-        .replace("-----END PUBLIC KEY-----", "")
-        .replaceAll("\\s", "");
+  /** PEM 문자열을 RSAPublicKey로 파싱한다. */
+  private RSAPublicKey parsePublicKey(String pem)
+      throws NoSuchAlgorithmException, InvalidKeySpecException {
+    String base64 =
+        pem.replace("-----BEGIN PUBLIC KEY-----", "")
+            .replace("-----END PUBLIC KEY-----", "")
+            .replaceAll("\\s", "");
 
     byte[] keyBytes = Base64.getDecoder().decode(base64);
     X509EncodedKeySpec keySpec = new X509EncodedKeySpec(keyBytes);
@@ -194,9 +184,7 @@ public class RsaKeyManager {
     return (RSAPublicKey) keyFactory.generatePublic(keySpec);
   }
 
-  /**
-   * 바이트 배열을 PEM 형식 문자열로 변환한다.
-   */
+  /** 바이트 배열을 PEM 형식 문자열로 변환한다. */
   private String toPemFormat(byte[] keyBytes, String type) {
     String base64 = Base64.getEncoder().encodeToString(keyBytes);
     StringBuilder pem = new StringBuilder();

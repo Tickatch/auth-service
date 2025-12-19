@@ -33,6 +33,7 @@ public class JwtKeyController {
    * <p>표준 경로: /.well-known/jwks.json
    *
    * <p>응답 예시:
+   *
    * <pre>
    * {
    *   "keys": [{
@@ -52,14 +53,20 @@ public class JwtKeyController {
   public ResponseEntity<Map<String, Object>> getJwks() {
     RSAPublicKey publicKey = tokenProvider.getPublicKey();
 
-    Map<String, Object> jwk = Map.of(
-        "kty", "RSA",
-        "alg", "RS256",
-        "use", "sig",
-        "kid", tokenProvider.getKeyId(),
-        "n", base64UrlEncode(publicKey.getModulus().toByteArray()),
-        "e", base64UrlEncode(publicKey.getPublicExponent().toByteArray())
-    );
+    Map<String, Object> jwk =
+        Map.of(
+            "kty",
+            "RSA",
+            "alg",
+            "RS256",
+            "use",
+            "sig",
+            "kid",
+            tokenProvider.getKeyId(),
+            "n",
+            base64UrlEncode(publicKey.getModulus().toByteArray()),
+            "e",
+            base64UrlEncode(publicKey.getPublicExponent().toByteArray()));
 
     Map<String, Object> jwks = Map.of("keys", List.of(jwk));
 
@@ -96,9 +103,7 @@ public class JwtKeyController {
     return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
   }
 
-  /**
-   * 바이트 배열을 PEM 형식으로 변환한다.
-   */
+  /** 바이트 배열을 PEM 형식으로 변환한다. */
   private String toPemFormat(byte[] keyBytes) {
     String base64 = Base64.getEncoder().encodeToString(keyBytes);
     StringBuilder pem = new StringBuilder();

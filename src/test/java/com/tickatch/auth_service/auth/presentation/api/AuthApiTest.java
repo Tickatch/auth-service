@@ -27,7 +27,6 @@ import com.tickatch.auth_service.auth.presentation.api.dto.request.WithdrawReque
 import com.tickatch.auth_service.token.application.service.command.dto.TokenResult;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -44,26 +43,22 @@ import org.springframework.test.web.servlet.MockMvc;
 @AutoConfigureMockMvc(addFilters = false)
 class AuthApiTest {
 
-  @Autowired
-  private MockMvc mockMvc;
+  @Autowired private MockMvc mockMvc;
 
-  @Autowired
-  private ObjectMapper objectMapper;
+  @Autowired private ObjectMapper objectMapper;
 
-  @MockitoBean
-  private AuthCommandService authCommandService;
+  @MockitoBean private AuthCommandService authCommandService;
 
-  @MockitoBean
-  private AuthQueryService authQueryService;
+  @MockitoBean private AuthQueryService authQueryService;
 
   private LoginResult createLoginResult() {
     UUID authId = UUID.randomUUID();
-    TokenResult tokenResult = TokenResult.of(
-        "access-token",
-        "refresh-token",
-        LocalDateTime.now().plusMinutes(5),
-        LocalDateTime.now().plusDays(7)
-    );
+    TokenResult tokenResult =
+        TokenResult.of(
+            "access-token",
+            "refresh-token",
+            LocalDateTime.now().plusMinutes(5),
+            LocalDateTime.now().plusDays(7));
     return LoginResult.of(authId, "test@test.com", UserType.CUSTOMER, tokenResult);
   }
 
@@ -73,14 +68,16 @@ class AuthApiTest {
 
     @Test
     void 회원가입을_성공한다() throws Exception {
-      RegisterRequest request = new RegisterRequest(
-          "test@test.com", "Password123!", UserType.CUSTOMER, false);
+      RegisterRequest request =
+          new RegisterRequest("test@test.com", "Password123!", UserType.CUSTOMER, false);
 
       given(authCommandService.register(any())).willReturn(createLoginResult());
 
-      mockMvc.perform(post("/api/v1/auth/register")
-              .contentType(MediaType.APPLICATION_JSON)
-              .content(objectMapper.writeValueAsString(request)))
+      mockMvc
+          .perform(
+              post("/api/v1/auth/register")
+                  .contentType(MediaType.APPLICATION_JSON)
+                  .content(objectMapper.writeValueAsString(request)))
           .andExpect(status().isCreated())
           .andExpect(jsonPath("$.email").value("test@test.com"))
           .andExpect(jsonPath("$.accessToken").value("access-token"));
@@ -88,23 +85,26 @@ class AuthApiTest {
 
     @Test
     void 이메일_누락_시_400_에러가_발생한다() throws Exception {
-      RegisterRequest request = new RegisterRequest(
-          "", "Password123!", UserType.CUSTOMER, false);
+      RegisterRequest request = new RegisterRequest("", "Password123!", UserType.CUSTOMER, false);
 
-      mockMvc.perform(post("/api/v1/auth/register")
-              .contentType(MediaType.APPLICATION_JSON)
-              .content(objectMapper.writeValueAsString(request)))
+      mockMvc
+          .perform(
+              post("/api/v1/auth/register")
+                  .contentType(MediaType.APPLICATION_JSON)
+                  .content(objectMapper.writeValueAsString(request)))
           .andExpect(status().isBadRequest());
     }
 
     @Test
     void 비밀번호_짧으면_400_에러가_발생한다() throws Exception {
-      RegisterRequest request = new RegisterRequest(
-          "test@test.com", "short", UserType.CUSTOMER, false);
+      RegisterRequest request =
+          new RegisterRequest("test@test.com", "short", UserType.CUSTOMER, false);
 
-      mockMvc.perform(post("/api/v1/auth/register")
-              .contentType(MediaType.APPLICATION_JSON)
-              .content(objectMapper.writeValueAsString(request)))
+      mockMvc
+          .perform(
+              post("/api/v1/auth/register")
+                  .contentType(MediaType.APPLICATION_JSON)
+                  .content(objectMapper.writeValueAsString(request)))
           .andExpect(status().isBadRequest());
     }
   }
@@ -116,14 +116,16 @@ class AuthApiTest {
     @Test
     void 로그인_성공에_성공한다() throws Exception {
 
-      LoginRequest request = new LoginRequest(
-          "test@test.com", "Password123!", UserType.CUSTOMER, false);
+      LoginRequest request =
+          new LoginRequest("test@test.com", "Password123!", UserType.CUSTOMER, false);
 
       given(authCommandService.login(any())).willReturn(createLoginResult());
 
-      mockMvc.perform(post("/api/v1/auth/login")
-              .contentType(MediaType.APPLICATION_JSON)
-              .content(objectMapper.writeValueAsString(request)))
+      mockMvc
+          .perform(
+              post("/api/v1/auth/login")
+                  .contentType(MediaType.APPLICATION_JSON)
+                  .content(objectMapper.writeValueAsString(request)))
           .andExpect(status().isOk())
           .andExpect(jsonPath("$.email").value("test@test.com"))
           .andExpect(jsonPath("$.accessToken").value("access-token"))
@@ -141,9 +143,11 @@ class AuthApiTest {
 
       given(authCommandService.refresh(any())).willReturn(createLoginResult());
 
-      mockMvc.perform(post("/api/v1/auth/refresh")
-              .contentType(MediaType.APPLICATION_JSON)
-              .content(objectMapper.writeValueAsString(request)))
+      mockMvc
+          .perform(
+              post("/api/v1/auth/refresh")
+                  .contentType(MediaType.APPLICATION_JSON)
+                  .content(objectMapper.writeValueAsString(request)))
           .andExpect(status().isOk())
           .andExpect(jsonPath("$.accessToken").value("access-token"));
     }
@@ -160,10 +164,12 @@ class AuthApiTest {
 
       doNothing().when(authCommandService).logout(any());
 
-      mockMvc.perform(post("/api/v1/auth/logout")
-              .contentType(MediaType.APPLICATION_JSON)
-              .header("X-User-Id", authId.toString())
-              .content(objectMapper.writeValueAsString(request)))
+      mockMvc
+          .perform(
+              post("/api/v1/auth/logout")
+                  .contentType(MediaType.APPLICATION_JSON)
+                  .header("X-User-Id", authId.toString())
+                  .content(objectMapper.writeValueAsString(request)))
           .andExpect(status().isNoContent());
     }
   }
@@ -175,15 +181,17 @@ class AuthApiTest {
     @Test
     void 비밀번호_변경에_성공한다() throws Exception {
       UUID authId = UUID.randomUUID();
-      ChangePasswordRequest request = new ChangePasswordRequest(
-          "CurrentPassword123!", "NewPassword456!");
+      ChangePasswordRequest request =
+          new ChangePasswordRequest("CurrentPassword123!", "NewPassword456!");
 
       doNothing().when(authCommandService).changePassword(any());
 
-      mockMvc.perform(put("/api/v1/auth/password")
-              .contentType(MediaType.APPLICATION_JSON)
-              .header("X-User-Id", authId.toString())
-              .content(objectMapper.writeValueAsString(request)))
+      mockMvc
+          .perform(
+              put("/api/v1/auth/password")
+                  .contentType(MediaType.APPLICATION_JSON)
+                  .header("X-User-Id", authId.toString())
+                  .content(objectMapper.writeValueAsString(request)))
           .andExpect(status().isNoContent());
     }
   }
@@ -199,10 +207,12 @@ class AuthApiTest {
 
       doNothing().when(authCommandService).withdraw(any());
 
-      mockMvc.perform(delete("/api/v1/auth/withdraw")
-              .contentType(MediaType.APPLICATION_JSON)
-              .header("X-User-Id", authId.toString())
-              .content(objectMapper.writeValueAsString(request)))
+      mockMvc
+          .perform(
+              delete("/api/v1/auth/withdraw")
+                  .contentType(MediaType.APPLICATION_JSON)
+                  .header("X-User-Id", authId.toString())
+                  .content(objectMapper.writeValueAsString(request)))
           .andExpect(status().isNoContent());
     }
   }
@@ -214,14 +224,20 @@ class AuthApiTest {
     @Test
     void 내_정보_조회할_수_있다() throws Exception {
       UUID authId = UUID.randomUUID();
-      AuthInfo authInfo = new AuthInfo(
-          authId, "test@test.com", UserType.CUSTOMER, AuthStatus.ACTIVE,
-          LocalDateTime.now(), List.of(), LocalDateTime.now());
+      AuthInfo authInfo =
+          new AuthInfo(
+              authId,
+              "test@test.com",
+              UserType.CUSTOMER,
+              AuthStatus.ACTIVE,
+              LocalDateTime.now(),
+              List.of(),
+              LocalDateTime.now());
 
       given(authQueryService.findById(authId)).willReturn(authInfo);
 
-      mockMvc.perform(get("/api/v1/auth/me")
-              .header("X-User-Id", authId.toString()))
+      mockMvc
+          .perform(get("/api/v1/auth/me").header("X-User-Id", authId.toString()))
           .andExpect(status().isOk())
           .andExpect(jsonPath("$.email").value("test@test.com"))
           .andExpect(jsonPath("$.userType").value("CUSTOMER"));
@@ -239,9 +255,11 @@ class AuthApiTest {
       given(authQueryService.existsByEmailAndUserType("new@test.com", UserType.CUSTOMER))
           .willReturn(false);
 
-      mockMvc.perform(post("/api/v1/auth/check-email")
-              .contentType(MediaType.APPLICATION_JSON)
-              .content(objectMapper.writeValueAsString(request)))
+      mockMvc
+          .perform(
+              post("/api/v1/auth/check-email")
+                  .contentType(MediaType.APPLICATION_JSON)
+                  .content(objectMapper.writeValueAsString(request)))
           .andExpect(status().isOk())
           .andExpect(jsonPath("$.available").value(true));
     }
@@ -253,9 +271,11 @@ class AuthApiTest {
       given(authQueryService.existsByEmailAndUserType("exist@test.com", UserType.CUSTOMER))
           .willReturn(true);
 
-      mockMvc.perform(post("/api/v1/auth/check-email")
-              .contentType(MediaType.APPLICATION_JSON)
-              .content(objectMapper.writeValueAsString(request)))
+      mockMvc
+          .perform(
+              post("/api/v1/auth/check-email")
+                  .contentType(MediaType.APPLICATION_JSON)
+                  .content(objectMapper.writeValueAsString(request)))
           .andExpect(status().isOk())
           .andExpect(jsonPath("$.available").value(false));
     }

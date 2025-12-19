@@ -145,9 +145,7 @@ public class RefreshToken {
             : LocalDateTime.now().plusHours(DEFAULT_EXPIRY_HOURS);
   }
 
-  /**
-   * 토큰을 폐기한다.
-   */
+  /** 토큰을 폐기한다. */
   public void revoke() {
     this.revoked = true;
   }

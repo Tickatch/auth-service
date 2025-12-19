@@ -38,7 +38,6 @@ class PasswordTest {
           .extracting(e -> ((AuthException) e).getErrorCode())
           .isEqualTo(AuthErrorCode.PASSWORD_TOO_SHORT);
     }
-
   }
 
   @Nested
@@ -127,12 +126,13 @@ class PasswordTest {
     class 허용된_특수문자_테스트 {
 
       @ParameterizedTest
-      @ValueSource(strings = {
-          "Abcd123!", "Abcd123@", "Abcd123#", "Abcd123$", "Abcd123%",
-          "Abcd123^", "Abcd123*", "Abcd123(", "Abcd123)", "Abcd123_",
-          "Abcd123+", "Abcd123-", "Abcd123=", "Abcd123.", "Abcd123,",
-          "Abcd123?"
-      })
+      @ValueSource(
+          strings = {
+            "Abcd123!", "Abcd123@", "Abcd123#", "Abcd123$", "Abcd123%",
+            "Abcd123^", "Abcd123*", "Abcd123(", "Abcd123)", "Abcd123_",
+            "Abcd123+", "Abcd123-", "Abcd123=", "Abcd123.", "Abcd123,",
+            "Abcd123?"
+          })
       void 허용된_특수문자는_검증을_통과한다(String password) {
         // 예외가 발생하지 않아야 함
         Password.validatePolicy(password);

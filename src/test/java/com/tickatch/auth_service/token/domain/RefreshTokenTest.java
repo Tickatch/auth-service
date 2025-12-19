@@ -64,7 +64,8 @@ class RefreshTokenTest {
 
     @Test
     void 토큰을_새_값으로_교체한다() {
-      RefreshToken refreshToken = RefreshToken.create(UUID.randomUUID(), "old-token", "device", false);
+      RefreshToken refreshToken =
+          RefreshToken.create(UUID.randomUUID(), "old-token", "device", false);
       String newToken = "new-token";
 
       refreshToken.rotate(newToken);

@@ -37,25 +37,21 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 @DisplayName("OAuthCommandService 테스트")
 @ExtendWith(MockitoExtension.class)
 class OAuthCommandServiceTest {
-  @InjectMocks
-  private OAuthCommandService oAuthCommandService;
+  @InjectMocks private OAuthCommandService oAuthCommandService;
 
-  @Mock
-  private AuthRepository authRepository;
+  @Mock private AuthRepository authRepository;
 
-  @Mock
-  private OAuthPort oAuthPort;
+  @Mock private OAuthPort oAuthPort;
 
-  @Mock
-  private TokenPort tokenPort;
+  @Mock private TokenPort tokenPort;
 
   private PasswordEncoder passwordEncoder;
 
   @BeforeEach
   void setUp() {
     passwordEncoder = new BCryptPasswordEncoder();
-    oAuthCommandService = new OAuthCommandService(
-        authRepository, oAuthPort, tokenPort, passwordEncoder);
+    oAuthCommandService =
+        new OAuthCommandService(authRepository, oAuthPort, tokenPort, passwordEncoder);
   }
 
   private TokenResult createTokenResult() {
@@ -63,8 +59,7 @@ class OAuthCommandServiceTest {
         "access-token",
         "refresh-token",
         LocalDateTime.now().plusMinutes(5),
-        LocalDateTime.now().plusDays(7)
-    );
+        LocalDateTime.now().plusDays(7));
   }
 
   private OAuthUserInfo createOAuthUserInfo() {
@@ -85,8 +80,8 @@ class OAuthCommandServiceTest {
       given(oAuthPort.getAuthorizationUrl(any(), anyString()))
           .willReturn("https://kauth.kakao.com/oauth/authorize?...");
 
-      String url = oAuthCommandService.getAuthorizationUrl(
-          ProviderType.KAKAO, false, "device-info");
+      String url =
+          oAuthCommandService.getAuthorizationUrl(ProviderType.KAKAO, false, "device-info");
 
       assertThat(url).startsWith("https://kauth.kakao.com");
     }
@@ -95,8 +90,9 @@ class OAuthCommandServiceTest {
     void 설정되지_않은_제공자는_실패한다() {
       given(oAuthPort.isProviderConfigured(ProviderType.KAKAO)).willReturn(false);
 
-      assertThatThrownBy(() -> oAuthCommandService.getAuthorizationUrl(
-          ProviderType.KAKAO, false, "device-info"))
+      assertThatThrownBy(
+              () ->
+                  oAuthCommandService.getAuthorizationUrl(ProviderType.KAKAO, false, "device-info"))
           .isInstanceOf(AuthException.class)
           .hasFieldOrPropertyWithValue("errorCode", AuthErrorCode.OAUTH_PROVIDER_NOT_CONFIGURED);
     }
@@ -110,19 +106,16 @@ class OAuthCommandServiceTest {
       OAuthState state = OAuthState.forLogin(false, "device-info");
       OAuthUserInfo userInfo = createOAuthUserInfo();
 
-      given(oAuthPort.getUserInfo(ProviderType.KAKAO, "code"))
-          .willReturn(userInfo);
+      given(oAuthPort.getUserInfo(ProviderType.KAKAO, "code")).willReturn(userInfo);
       given(authRepository.findByProviderAndProviderUserId(any(), anyString()))
           .willReturn(Optional.empty());
-      given(authRepository.findByEmailAndUserType(anyString(), any()))
-          .willReturn(Optional.empty());
-      given(authRepository.save(any(Auth.class)))
-          .willAnswer(inv -> inv.getArgument(0));
+      given(authRepository.findByEmailAndUserType(anyString(), any())).willReturn(Optional.empty());
+      given(authRepository.save(any(Auth.class))).willAnswer(inv -> inv.getArgument(0));
       given(tokenPort.issueTokens(any(), any(), anyString(), anyBoolean()))
           .willReturn(createTokenResult());
 
-      LoginResult result = oAuthCommandService.handleCallback(
-          ProviderType.KAKAO, "code", state.encode());
+      LoginResult result =
+          oAuthCommandService.handleCallback(ProviderType.KAKAO, "code", state.encode());
 
       assertThat(result).isNotNull();
       assertThat(result.email()).isEqualTo("test@test.com");
@@ -132,22 +125,27 @@ class OAuthCommandServiceTest {
 
     @Test
     void 기존_회원_제공자_정보로_로그인이_가능하다() {
-      Auth existingAuth = Auth.registerWithOAuth(
-          "test@test.com", "Password123!", UserType.CUSTOMER,
-          ProviderType.KAKAO, "kakao123", passwordEncoder, "SYSTEM");
+      Auth existingAuth =
+          Auth.registerWithOAuth(
+              "test@test.com",
+              "Password123!",
+              UserType.CUSTOMER,
+              ProviderType.KAKAO,
+              "kakao123",
+              passwordEncoder,
+              "SYSTEM");
 
       OAuthState state = OAuthState.forLogin(false, "device-info");
       OAuthUserInfo userInfo = createOAuthUserInfo();
 
-      given(oAuthPort.getUserInfo(ProviderType.KAKAO, "code"))
-          .willReturn(userInfo);
+      given(oAuthPort.getUserInfo(ProviderType.KAKAO, "code")).willReturn(userInfo);
       given(authRepository.findByProviderAndProviderUserId(ProviderType.KAKAO, "kakao123"))
           .willReturn(Optional.of(existingAuth));
       given(tokenPort.issueTokens(any(), any(), anyString(), anyBoolean()))
           .willReturn(createTokenResult());
 
-      LoginResult result = oAuthCommandService.handleCallback(
-          ProviderType.KAKAO, "code", state.encode());
+      LoginResult result =
+          oAuthCommandService.handleCallback(ProviderType.KAKAO, "code", state.encode());
 
       assertThat(result).isNotNull();
       assertThat(result.email()).isEqualTo("test@test.com");
@@ -155,14 +153,14 @@ class OAuthCommandServiceTest {
 
     @Test
     void 기존_회원_이메일로_연동_후_로그인이_가능하다() {
-      Auth existingAuth = Auth.register(
-          "test@test.com", "Password123!", UserType.CUSTOMER, passwordEncoder, "SYSTEM");
+      Auth existingAuth =
+          Auth.register(
+              "test@test.com", "Password123!", UserType.CUSTOMER, passwordEncoder, "SYSTEM");
 
       OAuthState state = OAuthState.forLogin(false, "device-info");
       OAuthUserInfo userInfo = createOAuthUserInfo();
 
-      given(oAuthPort.getUserInfo(ProviderType.KAKAO, "code"))
-          .willReturn(userInfo);
+      given(oAuthPort.getUserInfo(ProviderType.KAKAO, "code")).willReturn(userInfo);
       given(authRepository.findByProviderAndProviderUserId(any(), anyString()))
           .willReturn(Optional.empty());
       given(authRepository.findByEmailAndUserType("test@test.com", UserType.CUSTOMER))
@@ -170,8 +168,8 @@ class OAuthCommandServiceTest {
       given(tokenPort.issueTokens(any(), any(), anyString(), anyBoolean()))
           .willReturn(createTokenResult());
 
-      LoginResult result = oAuthCommandService.handleCallback(
-          ProviderType.KAKAO, "code", state.encode());
+      LoginResult result =
+          oAuthCommandService.handleCallback(ProviderType.KAKAO, "code", state.encode());
 
       assertThat(result).isNotNull();
       assertThat(existingAuth.hasProvider(ProviderType.KAKAO)).isTrue();
@@ -180,25 +178,25 @@ class OAuthCommandServiceTest {
     @Test
     void 이메일이_없으면_실패한다() {
       OAuthState state = OAuthState.forLogin(false, "device-info");
-      OAuthUserInfo userInfoNoEmail = OAuthUserInfo.builder()
-          .providerType(ProviderType.KAKAO)
-          .providerUserId("kakao123")
-          .email(null)
-          .build();
+      OAuthUserInfo userInfoNoEmail =
+          OAuthUserInfo.builder()
+              .providerType(ProviderType.KAKAO)
+              .providerUserId("kakao123")
+              .email(null)
+              .build();
 
-      given(oAuthPort.getUserInfo(ProviderType.KAKAO, "code"))
-          .willReturn(userInfoNoEmail);
+      given(oAuthPort.getUserInfo(ProviderType.KAKAO, "code")).willReturn(userInfoNoEmail);
 
-      assertThatThrownBy(() -> oAuthCommandService.handleCallback(
-          ProviderType.KAKAO, "code", state.encode()))
+      assertThatThrownBy(
+              () -> oAuthCommandService.handleCallback(ProviderType.KAKAO, "code", state.encode()))
           .isInstanceOf(AuthException.class)
           .hasFieldOrPropertyWithValue("errorCode", AuthErrorCode.OAUTH_EMAIL_REQUIRED);
     }
 
     @Test
     void 잘못된_state는_실패한다() {
-      assertThatThrownBy(() -> oAuthCommandService.handleCallback(
-          ProviderType.KAKAO, "code", "invalid-state"))
+      assertThatThrownBy(
+              () -> oAuthCommandService.handleCallback(ProviderType.KAKAO, "code", "invalid-state"))
           .isInstanceOf(AuthException.class)
           .hasFieldOrPropertyWithValue("errorCode", AuthErrorCode.INVALID_OAUTH_STATE);
     }
@@ -209,8 +207,9 @@ class OAuthCommandServiceTest {
 
     @Test
     void 연동_URL_생성_성공한다() {
-      Auth auth = Auth.register(
-          "test@test.com", "Password123!", UserType.CUSTOMER, passwordEncoder, "SYSTEM");
+      Auth auth =
+          Auth.register(
+              "test@test.com", "Password123!", UserType.CUSTOMER, passwordEncoder, "SYSTEM");
       UUID authId = auth.getId();
 
       given(authRepository.findById(authId)).willReturn(Optional.of(auth));
@@ -225,29 +224,36 @@ class OAuthCommandServiceTest {
 
     @Test
     void 이미_연동된_제공자는_실패한다() {
-      Auth auth = Auth.registerWithOAuth(
-          "test@test.com", "Password123!", UserType.CUSTOMER,
-          ProviderType.KAKAO, "kakao123", passwordEncoder, "SYSTEM");
+      Auth auth =
+          Auth.registerWithOAuth(
+              "test@test.com",
+              "Password123!",
+              UserType.CUSTOMER,
+              ProviderType.KAKAO,
+              "kakao123",
+              passwordEncoder,
+              "SYSTEM");
       UUID authId = auth.getId();
 
       given(authRepository.findById(authId)).willReturn(Optional.of(auth));
 
-      assertThatThrownBy(() -> oAuthCommandService.getLinkUrl(
-          ProviderType.KAKAO, authId, "device-info"))
+      assertThatThrownBy(
+              () -> oAuthCommandService.getLinkUrl(ProviderType.KAKAO, authId, "device-info"))
           .isInstanceOf(AuthException.class)
           .hasFieldOrPropertyWithValue("errorCode", AuthErrorCode.PROVIDER_ALREADY_CONNECTED);
     }
 
     @Test
     void SELLER는_연동이_불가능하다() {
-      Auth auth = Auth.register(
-          "test@test.com", "Password123!", UserType.SELLER, passwordEncoder, "SYSTEM");
+      Auth auth =
+          Auth.register(
+              "test@test.com", "Password123!", UserType.SELLER, passwordEncoder, "SYSTEM");
       UUID authId = auth.getId();
 
       given(authRepository.findById(authId)).willReturn(Optional.of(auth));
 
-      assertThatThrownBy(() -> oAuthCommandService.getLinkUrl(
-          ProviderType.KAKAO, authId, "device-info"))
+      assertThatThrownBy(
+              () -> oAuthCommandService.getLinkUrl(ProviderType.KAKAO, authId, "device-info"))
           .isInstanceOf(AuthException.class)
           .hasFieldOrPropertyWithValue("errorCode", AuthErrorCode.OAUTH_NOT_ALLOWED_FOR_USER_TYPE);
     }
@@ -258,9 +264,15 @@ class OAuthCommandServiceTest {
 
     @Test
     void 연동_해제_성공한다() {
-      Auth auth = Auth.registerWithOAuth(
-          "test@test.com", "Password123!", UserType.CUSTOMER,
-          ProviderType.KAKAO, "kakao123", passwordEncoder, "SYSTEM");
+      Auth auth =
+          Auth.registerWithOAuth(
+              "test@test.com",
+              "Password123!",
+              UserType.CUSTOMER,
+              ProviderType.KAKAO,
+              "kakao123",
+              passwordEncoder,
+              "SYSTEM");
       UUID authId = auth.getId();
 
       given(authRepository.findById(authId)).willReturn(Optional.of(auth));
@@ -269,6 +281,5 @@ class OAuthCommandServiceTest {
 
       assertThat(auth.hasProvider(ProviderType.KAKAO)).isFalse();
     }
-
   }
 }

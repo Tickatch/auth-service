@@ -18,12 +18,9 @@ public record OAuthUserInfo(
     String providerUserId,
     String email,
     String name,
-    String profileImage
-) {
+    String profileImage) {
 
-  /**
-   * 빌더 패턴으로 생성.
-   */
+  /** 빌더 패턴으로 생성. */
   public static Builder builder() {
     return new Builder();
   }

@@ -17,38 +17,53 @@ class AuthErrorCodeTest {
     void 에러코드_404는_NOT_FOUND_상태를_가진다() {
 
       assertThat(AuthErrorCode.AUTH_NOT_FOUND.getStatus()).isEqualTo(HttpStatus.NOT_FOUND.value());
-      assertThat(AuthErrorCode.PROVIDER_NOT_FOUND.getStatus()).isEqualTo(HttpStatus.NOT_FOUND.value());
+      assertThat(AuthErrorCode.PROVIDER_NOT_FOUND.getStatus())
+          .isEqualTo(HttpStatus.NOT_FOUND.value());
     }
 
     @Test
     void 에러코드_400은_BAD_REQUEST_상태를_가진다() {
 
       assertThat(AuthErrorCode.INVALID_EMAIL.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST.value());
-      assertThat(AuthErrorCode.INVALID_PASSWORD.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST.value());
-      assertThat(AuthErrorCode.INVALID_USER_TYPE.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST.value());
-      assertThat(AuthErrorCode.DUPLICATE_EMAIL.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST.value());
-      assertThat(AuthErrorCode.PASSWORD_MISMATCH.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST.value());
-      assertThat(AuthErrorCode.SAME_AS_OLD_PASSWORD.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST.value());
-      assertThat(AuthErrorCode.PASSWORD_TOO_SHORT.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST.value());
-      assertThat(AuthErrorCode.PASSWORD_TOO_WEAK.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST.value());
-      assertThat(AuthErrorCode.INVALID_PROVIDER.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST.value());
-      assertThat(AuthErrorCode.INVALID_OAUTH_CODE.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST.value());
-      assertThat(AuthErrorCode.PROVIDER_ALREADY_CONNECTED.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST.value());
-      assertThat(AuthErrorCode.OAUTH_NOT_ALLOWED_FOR_USER_TYPE.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST.value());
+      assertThat(AuthErrorCode.INVALID_PASSWORD.getStatus())
+          .isEqualTo(HttpStatus.BAD_REQUEST.value());
+      assertThat(AuthErrorCode.INVALID_USER_TYPE.getStatus())
+          .isEqualTo(HttpStatus.BAD_REQUEST.value());
+      assertThat(AuthErrorCode.DUPLICATE_EMAIL.getStatus())
+          .isEqualTo(HttpStatus.BAD_REQUEST.value());
+      assertThat(AuthErrorCode.PASSWORD_MISMATCH.getStatus())
+          .isEqualTo(HttpStatus.BAD_REQUEST.value());
+      assertThat(AuthErrorCode.SAME_AS_OLD_PASSWORD.getStatus())
+          .isEqualTo(HttpStatus.BAD_REQUEST.value());
+      assertThat(AuthErrorCode.PASSWORD_TOO_SHORT.getStatus())
+          .isEqualTo(HttpStatus.BAD_REQUEST.value());
+      assertThat(AuthErrorCode.PASSWORD_TOO_WEAK.getStatus())
+          .isEqualTo(HttpStatus.BAD_REQUEST.value());
+      assertThat(AuthErrorCode.INVALID_PROVIDER.getStatus())
+          .isEqualTo(HttpStatus.BAD_REQUEST.value());
+      assertThat(AuthErrorCode.INVALID_OAUTH_CODE.getStatus())
+          .isEqualTo(HttpStatus.BAD_REQUEST.value());
+      assertThat(AuthErrorCode.PROVIDER_ALREADY_CONNECTED.getStatus())
+          .isEqualTo(HttpStatus.BAD_REQUEST.value());
+      assertThat(AuthErrorCode.OAUTH_NOT_ALLOWED_FOR_USER_TYPE.getStatus())
+          .isEqualTo(HttpStatus.BAD_REQUEST.value());
     }
 
     @Test
     void 에러코드_401은_UNAUTHORIZED_상태를_가진다() {
 
-      assertThat(AuthErrorCode.INVALID_CREDENTIALS.getStatus()).isEqualTo(HttpStatus.UNAUTHORIZED.value());
-      assertThat(AuthErrorCode.AUTHENTICATION_FAILED.getStatus()).isEqualTo(HttpStatus.UNAUTHORIZED.value());
+      assertThat(AuthErrorCode.INVALID_CREDENTIALS.getStatus())
+          .isEqualTo(HttpStatus.UNAUTHORIZED.value());
+      assertThat(AuthErrorCode.AUTHENTICATION_FAILED.getStatus())
+          .isEqualTo(HttpStatus.UNAUTHORIZED.value());
     }
 
     @Test
     void 에러코드_403은_FORBIDDEN_상태를_가진다() {
 
       assertThat(AuthErrorCode.ACCOUNT_LOCKED.getStatus()).isEqualTo(HttpStatus.FORBIDDEN.value());
-      assertThat(AuthErrorCode.ACCOUNT_WITHDRAWN.getStatus()).isEqualTo(HttpStatus.FORBIDDEN.value());
+      assertThat(AuthErrorCode.ACCOUNT_WITHDRAWN.getStatus())
+          .isEqualTo(HttpStatus.FORBIDDEN.value());
       assertThat(AuthErrorCode.ACCESS_DENIED.getStatus()).isEqualTo(HttpStatus.FORBIDDEN.value());
     }
 
