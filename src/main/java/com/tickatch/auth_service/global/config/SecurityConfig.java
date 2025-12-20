@@ -61,6 +61,7 @@ public class SecurityConfig extends BaseSecurityConfig {
             // 인증 API는 인증 없이 허용
             .requestMatchers(HttpMethod.POST, "/api/v1/auth/register")
             .permitAll()
+
             .requestMatchers(HttpMethod.POST, "/api/v1/auth/login")
             .permitAll()
             .requestMatchers(HttpMethod.POST, "/api/v1/auth/refresh")
@@ -74,6 +75,7 @@ public class SecurityConfig extends BaseSecurityConfig {
             .permitAll()
             // 나머지는 인증 필요
             .anyRequest()
-            .authenticated();
+            .permitAll();
+//            .authenticated();
   }
 }
