@@ -32,6 +32,7 @@ public class FeignRequestInterceptor implements RequestInterceptor {
 
   // 커스텀 헤더
   private static final String HEADER_USER_ID = "X-User-Id";
+  private static final String HEADER_USER_TYPE = "X-User-Type";
   private static final String HEADER_TRACE_ID = "X-Trace-Id";
 
   // B3 헤더 (Brave/Zipkin 표준)
@@ -47,6 +48,7 @@ public class FeignRequestInterceptor implements RequestInterceptor {
     if (attributes != null) {
       HttpServletRequest request = attributes.getRequest();
       propagateHeader(request, template, HEADER_USER_ID);
+      propagateHeader(request, template, HEADER_USER_TYPE);
     }
 
     // Brave가 MDC에 설정한 traceId/spanId 전파
@@ -78,3 +80,4 @@ public class FeignRequestInterceptor implements RequestInterceptor {
     }
   }
 }
+

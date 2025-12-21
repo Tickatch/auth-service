@@ -54,8 +54,8 @@ public record AuthLogEvent(
         authId,
         userType,
         actionType,
-        actorInfo.actorType(),
-        actorInfo.actorUserId(),
+        userType,
+        authId,
         LocalDateTime.now());
   }
 
